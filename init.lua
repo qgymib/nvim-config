@@ -45,9 +45,6 @@ local function setup_basic()
     vim.o.softtabstop = 4
     vim.o.expandtab = true
     vim.o.statusline='%f  %y%m%r%h%w%=[%l,%v]      [%L,%p%%] %n'
-    vim.opt.list = true
-    vim.opt.listchars:append("space:⋅")
-    vim.opt.listchars:append("eol:↴")
 end
 setup_basic()
 
@@ -160,8 +157,6 @@ require('packer').startup({function()
         event = "BufRead",
         config = function()
             require('indent_blankline').setup {
-                indentLine_enabled = 1,
-                char = "▏",
                 filetype_exclude = {
                    "help",
                    "terminal",
