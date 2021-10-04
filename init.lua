@@ -49,7 +49,7 @@ end
 setup_basic()
 
 -- configuration
-require('packer').startup({function()
+require('packer').startup({function(use)
     -- Packer can manage itself
     use {
         'wbthomason/packer.nvim',
@@ -223,6 +223,31 @@ require('packer').startup({function()
         requires = {
             {
                 'williamboman/nvim-lsp-installer',
+                config = function()
+                    local lsp_installer = require("nvim-lsp-installer")
+                    lsp_installer.on_server_ready(function(server)
+                        local on_attach = function(client, bufnr)
+                            -- Enable completion triggered by <c-x><c-o>
+                            vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
+                            require("which-key").register(
+                                {
+                                    [ "lD" ] = { "<cmd>lua vim.lsp.buf.declaration()<CR>", "Declaration" },
+                                    [ "ld" ] = { "<cmd>lua vim.lsp.buf.definition()<CR>", "Definition" },
+                                    [ "lr" ] = { "<cmd>lua vim.lsp.buf.references()<CR>", "References" },
+                                    [ "lR" ] = { "<cmd>lua vim.lsp.buf.rename()<CR>", "Rename" },
+                                },
+                                {
+                                    prefix = "<leader>",
+                                    buffer = bufnr,
+                                }
+                            )
+                        end
+
+                        -- This setup() function is exactly the same as lspconfig's setup function (:help lspconfig-quickstart)
+                        server:setup({ on_attach = on_attach })
+                        vim.cmd [[ do User LspAttachBuffers ]]
+                    end)
+                end
             },
         },
         opt = true,
@@ -236,23 +261,7 @@ require('packer').startup({function()
             end, 0)
         end,
         config = function()
-            local nvim_lsp = require('lspconfig')
-            local on_attach = function(client, bufnr)
-                -- Enable completion triggered by <c-x><c-o>
-                vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
-                require("which-key").register(
-                    {
-                        [ "lD" ] = { "<cmd>lua vim.lsp.buf.declaration()<CR>", "Declaration" },
-                        [ "ld" ] = { "<cmd>lua vim.lsp.buf.definition()<CR>", "Definition" },
-                        [ "lr" ] = { "<cmd>lua vim.lsp.buf.references()<CR>", "References" },
-                        [ "lR" ] = { "<cmd>lua vim.lsp.buf.rename()<CR>", "Rename" },
-                    },
-                    {
-                        prefix = "<leader>",
-                        buffer = bufnr,
-                    }
-                )
-            end
+            require('lspconfig')
         end
     }
     -- Auto completion
