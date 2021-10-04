@@ -88,6 +88,19 @@ require('packer').startup({function()
         end
     }
     use {
+        'nvim-treesitter/nvim-treesitter',
+        branch = "0.5-compat",
+        event = "BufRead",
+        config = function()
+            require('nvim-treesitter.configs').setup {
+                ensure_installed = "lua",
+                highlight = {
+                    enable = true,
+                }
+            }
+        end
+    }
+    use {
         'kyazdani42/nvim-web-devicons',
         after = 'onedark.nvim',
         config = function()
