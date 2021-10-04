@@ -203,6 +203,18 @@ require('packer').startup({function(use)
         },
         module = "telescope",
         cmd = "Telescope",
+        setup = function ()
+            require('which-key').register({
+                [ "<leader>ff" ] = {
+                    "<cmd>lua require('telescope.builtin').find_files()<cr>",
+                    "Find file in your current working directory, respects .gitignore"
+                },
+                [ "<leader>fo" ] = {
+                    "<cmd>lua require('telescope.builtin').file_browser()<cr>",
+                    "Open file"
+                }
+            })
+        end,
         config = function()
             require('telescope').setup {
                 fzf = {
