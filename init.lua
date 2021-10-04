@@ -76,6 +76,7 @@ require('packer').startup({function()
                 {
                     [ "f" ] = { name = "+file" },
                     [ "l" ] = { name = "+lsp" },
+                    [ "m" ] = { name = "+misc" }
                 },
                 { prefix = "<leader>" }
             )
@@ -104,6 +105,12 @@ require('packer').startup({function()
             vim.cmd[[
                 autocmd FileType dashboard set showtabline=0 | autocmd WinLeave <buffer> set showtabline=2
             ]]
+            require('which-key').register {
+                [ "<leader>md" ] = {
+                    "<cmd>Dashboard<cr>",
+                    "Open Dashboard"
+                }
+            }
         end,
         config = function()
             vim.g.dashboard_default_executive = 'telescope'
