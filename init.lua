@@ -231,10 +231,10 @@ require('packer').startup({function(use)
                             vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
                             require("which-key").register(
                                 {
-                                    [ "lD" ] = { "<cmd>lua vim.lsp.buf.declaration()<CR>", "Declaration" },
-                                    [ "ld" ] = { "<cmd>lua vim.lsp.buf.definition()<CR>", "Definition" },
-                                    [ "lr" ] = { "<cmd>lua vim.lsp.buf.references()<CR>", "References" },
-                                    [ "lR" ] = { "<cmd>lua vim.lsp.buf.rename()<CR>", "Rename" },
+                                    [ "la" ] = { "<cmd>lua require('telescope.builtin').lsp_code_actions()<cr>", "List Code Actions" },
+                                    [ "ld" ] = { "<cmd>lua require('telescope.builtin').lsp_definitions()<cr>", "Definition" },
+                                    [ "lr" ] = { "<cmd>lua require('telescope.builtin').lsp_references()<cr>", "References" },
+                                    [ "lR" ] = { "<cmd>lua vim.lsp.buf.rename()<cr>", "Rename" },
                                 },
                                 {
                                     prefix = "<leader>",
