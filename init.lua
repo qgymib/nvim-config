@@ -71,6 +71,7 @@ require('packer').startup({function(use)
             -- pre-defined mapping groups
             require('which-key').register(
                 {
+                    [ "b" ] = { name = "+buffer" },
                     [ "f" ] = { name = "+file" },
                     [ "l" ] = { name = "+lsp" },
                     [ "m" ] = { name = "+misc" }
@@ -204,16 +205,23 @@ require('packer').startup({function(use)
         module = "telescope",
         cmd = "Telescope",
         setup = function ()
-            require('which-key').register({
-                [ "<leader>ff" ] = {
-                    "<cmd>lua require('telescope.builtin').find_files()<cr>",
-                    "Find file in your current working directory, respects .gitignore"
+            require('which-key').register(
+                {
+                    [ "bl" ] = {
+                        "<cmd>lua require('telescope.builtin').buffers()<cr>",
+                        "Lists open buffers"
+                    },
+                    [ "ff" ] = {
+                        "<cmd>lua require('telescope.builtin').find_files()<cr>",
+                        "Find file in your current working directory, respects .gitignore"
+                    },
+                    [ "fo" ] = {
+                        "<cmd>lua require('telescope.builtin').file_browser()<cr>",
+                        "Open file"
+                    }
                 },
-                [ "<leader>fo" ] = {
-                    "<cmd>lua require('telescope.builtin').file_browser()<cr>",
-                    "Open file"
-                }
-            })
+                { prefix = "<leader>" }
+            )
         end,
         config = function()
             require('telescope').setup {
@@ -243,10 +251,22 @@ require('packer').startup({function(use)
                             vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
                             require("which-key").register(
                                 {
-                                    [ "la" ] = { "<cmd>lua require('telescope.builtin').lsp_code_actions()<cr>", "List Code Actions" },
-                                    [ "ld" ] = { "<cmd>lua require('telescope.builtin').lsp_definitions()<cr>", "Definition" },
-                                    [ "lr" ] = { "<cmd>lua require('telescope.builtin').lsp_references()<cr>", "References" },
-                                    [ "lR" ] = { "<cmd>lua vim.lsp.buf.rename()<cr>", "Rename" },
+                                    [ "la" ] = {
+                                        "<cmd>lua require('telescope.builtin').lsp_code_actions()<cr>",
+                                        "List Code Actions"
+                                    },
+                                    [ "ld" ] = {
+                                        "<cmd>lua require('telescope.builtin').lsp_definitions()<cr>",
+                                        "Definition"
+                                    },
+                                    [ "lr" ] = {
+                                        "<cmd>lua require('telescope.builtin').lsp_references()<cr>",
+                                        "References"
+                                    },
+                                    [ "lR" ] = {
+                                        "<cmd>lua vim.lsp.buf.rename()<cr>",
+                                        "Rename"
+                                    },
                                 },
                                 {
                                     prefix = "<leader>",
@@ -370,16 +390,19 @@ require('packer').startup({function(use)
             }
         end,
         setup = function()
-            require('which-key').register {
-                ["<leader>ft"] = {
-                    "<cmd>NvimTreeToggle<cr>",
-                    "Toggle Tree View"
+            require('which-key').register (
+                {
+                    ["ft"] = {
+                        "<cmd>NvimTreeToggle<cr>",
+                        "Toggle Tree View"
+                    },
+                    ["fr"] = {
+                        "<cmd>NvimTreeRefresh<cr>",
+                        "Refresh Tree View"
+                    },
                 },
-                ["<leader>fr"] = {
-                    "<cmd>NvimTreeRefresh<cr>",
-                    "Refresh Tree View"
-                },
-            }
+                { prefix = "<leader>" }
+            )
         end
     }
 end,
