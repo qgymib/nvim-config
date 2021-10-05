@@ -195,6 +195,13 @@ require('packer').startup({function(use)
         end
     }
     use {
+        'shadmansaleh/lualine.nvim',
+        after = 'nvim-web-devicons',
+        config = function()
+            require('lualine').setup()
+        end
+    }
+    use {
         'nvim-telescope/telescope.nvim',
         requires = {
             { 'nvim-lua/plenary.nvim' },
