@@ -16,6 +16,7 @@ end
 ensure_packer_installed()
 
 local function setup_basic()
+    -- use <space> as leader key
     vim.g.mapleader = " "
     vim.opt.timeoutlen = 400
     vim.opt.termguicolors = true
@@ -160,7 +161,7 @@ require('packer').startup({function(use)
                 },
             }
             vim.g.dashboard_custom_footer = {
-                "   ",
+                "",
             }
         end
     }
@@ -203,9 +204,6 @@ require('packer').startup({function(use)
         'nvim-telescope/telescope.nvim',
         requires = {
             { 'nvim-lua/plenary.nvim' },
-            {
-                'nvim-telescope/telescope-fzf-native.nvim',
-            },
         },
         module = "telescope",
         cmd = "Telescope",
@@ -229,17 +227,7 @@ require('packer').startup({function(use)
             )
         end,
         config = function()
-            require('telescope').setup {
-                fzf = {
-                    fuzzy = true,                   -- false will only do exact matching
-                    override_generic_sorter = true, -- override the generic sorter
-                    override_file_sorter = true,    -- override the file sorter
-                    case_mode = "smart_case",       -- or "ignore_case" or "respect_case"
-                                                    -- the default case_mode is "smart_case"
-                }
-            }
-            -- Get fzf loaded and working with telescope
-            require('telescope').load_extension('fzf')
+            require('telescope').setup()
         end
     }
     -- lsp
@@ -251,7 +239,7 @@ require('packer').startup({function(use)
                 config = function()
                     local lsp_installer = require("nvim-lsp-installer")
                     lsp_installer.on_server_ready(function(server)
-                        local on_attach = function(client, bufnr)
+                        local on_attach_callback = function(client, bufnr)
                             -- Enable completion triggered by <c-x><c-o>
                             vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
                             require("which-key").register(
@@ -272,6 +260,10 @@ require('packer').startup({function(use)
                                         "<cmd>lua vim.lsp.buf.rename()<cr>",
                                         "Rename"
                                     },
+                                    [ "ls" ] = {
+                                        "<cmd>lua require('telescope.builtin').lsp_document_symbols()<cr>",
+                                        "List symbols"
+                                    },
                                 },
                                 {
                                     prefix = "<leader>",
@@ -281,7 +273,7 @@ require('packer').startup({function(use)
                         end
 
                         -- This setup() function is exactly the same as lspconfig's setup function (:help lspconfig-quickstart)
-                        server:setup({ on_attach = on_attach })
+                        server:setup({ on_attach = on_attach_callback })
                         vim.cmd [[ do User LspAttachBuffers ]]
                     end)
                 end
