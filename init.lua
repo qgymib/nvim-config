@@ -112,10 +112,8 @@ require('packer').startup({function(use)
     }
     use {
         'glepnir/dashboard-nvim',
+        event = "BufWinEnter",
         setup = function()
-            vim.cmd[[
-                autocmd FileType dashboard set showtabline=0 | autocmd WinLeave <buffer> set showtabline=2
-            ]]
             require('which-key').register {
                 [ "<leader>md" ] = {
                     "<cmd>Dashboard<cr>",
