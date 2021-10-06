@@ -272,8 +272,14 @@ require('packer').startup({function(use)
                             )
                         end
 
+                        local capabilities = vim.lsp.protocol.make_client_capabilities()
+                        capabilities = require("cmp_nvim_lsp").update_capabilities(capabilities)
+
                         -- This setup() function is exactly the same as lspconfig's setup function (:help lspconfig-quickstart)
-                        server:setup({ on_attach = on_attach_callback })
+                        server:setup({
+                            on_attach = on_attach_callback,
+                            capabilities = capabilities
+                        })
                         vim.cmd [[ do User LspAttachBuffers ]]
                     end)
                 end
@@ -322,7 +328,7 @@ require('packer').startup({function(use)
             },
             {
                 'hrsh7th/cmp-nvim-lsp',
-                after = 'cmp-nvim-lua',
+                after = "nvim-lspconfig",
             },
             {
                 'hrsh7th/cmp-buffer',
@@ -350,6 +356,7 @@ require('packer').startup({function(use)
                 end
             },
         },
+        module = "cmp",
         after = 'friendly-snippets',
         config = function()
             local cmp = require('cmp')
