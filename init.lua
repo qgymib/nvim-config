@@ -233,70 +233,60 @@ require('packer').startup({function(use)
     -- lsp
     use {
         'neovim/nvim-lspconfig',
-        requires = {
-            {
-                'williamboman/nvim-lsp-installer',
-                config = function()
-                    local lsp_installer = require("nvim-lsp-installer")
-                    lsp_installer.on_server_ready(function(server)
-                        local on_attach_callback = function(client, bufnr)
-                            -- Enable completion triggered by <c-x><c-o>
-                            vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
-                            require("which-key").register(
-                                {
-                                    [ "la" ] = {
-                                        "<cmd>lua require('telescope.builtin').lsp_code_actions()<cr>",
-                                        "List Code Actions"
-                                    },
-                                    [ "ld" ] = {
-                                        "<cmd>lua require('telescope.builtin').lsp_definitions()<cr>",
-                                        "Definition"
-                                    },
-                                    [ "lr" ] = {
-                                        "<cmd>lua require('telescope.builtin').lsp_references()<cr>",
-                                        "References"
-                                    },
-                                    [ "lR" ] = {
-                                        "<cmd>lua vim.lsp.buf.rename()<cr>",
-                                        "Rename"
-                                    },
-                                    [ "ls" ] = {
-                                        "<cmd>lua require('telescope.builtin').lsp_document_symbols()<cr>",
-                                        "List symbols"
-                                    },
-                                },
-                                {
-                                    prefix = "<leader>",
-                                    buffer = bufnr,
-                                }
-                            )
-                        end
-
-                        local capabilities = vim.lsp.protocol.make_client_capabilities()
-                        capabilities = require("cmp_nvim_lsp").update_capabilities(capabilities)
-
-                        -- This setup() function is exactly the same as lspconfig's setup function (:help lspconfig-quickstart)
-                        server:setup({
-                            on_attach = on_attach_callback,
-                            capabilities = capabilities
-                        })
-                        vim.cmd [[ do User LspAttachBuffers ]]
-                    end)
-                end
-            },
-        },
-        opt = true,
-        setup = function()
-            vim.defer_fn(function()
-                require("packer").loader('nvim-lspconfig')
-            end, 0)
-            -- reload the current file so lsp actually starts for it
-            vim.defer_fn(function()
-                vim.cmd 'if &ft == "packer" | echo "" | else | silent! e %'
-            end, 0)
-        end,
+        event = "InsertEnter",
         config = function()
             require('lspconfig')
+        end
+    }
+    use {
+        'williamboman/nvim-lsp-installer',
+        after = "nvim-lspconfig",
+        config = function()
+            local lsp_installer = require("nvim-lsp-installer")
+            lsp_installer.on_server_ready(function(server)
+                local on_attach_callback = function(client, bufnr)
+                    -- Enable completion triggered by <c-x><c-o>
+                    vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
+                    require("which-key").register(
+                        {
+                            [ "la" ] = {
+                                "<cmd>lua require('telescope.builtin').lsp_code_actions()<cr>",
+                                "List Code Actions"
+                            },
+                            [ "ld" ] = {
+                                "<cmd>lua require('telescope.builtin').lsp_definitions()<cr>",
+                                "Definition"
+                            },
+                            [ "lr" ] = {
+                                "<cmd>lua require('telescope.builtin').lsp_references()<cr>",
+                                "References"
+                            },
+                            [ "lR" ] = {
+                                "<cmd>lua vim.lsp.buf.rename()<cr>",
+                                "Rename"
+                            },
+                            [ "ls" ] = {
+                                "<cmd>lua require('telescope.builtin').lsp_document_symbols()<cr>",
+                                "List symbols"
+                            },
+                        },
+                        {
+                            prefix = "<leader>",
+                            buffer = bufnr,
+                        }
+                    )
+                end
+
+                local capabilities_fixed = vim.lsp.protocol.make_client_capabilities()
+                capabilities_fixed = require("cmp_nvim_lsp").update_capabilities(capabilities_fixed)
+
+                -- This setup() function is exactly the same as lspconfig's setup function (:help lspconfig-quickstart)
+                server:setup({
+                    on_attach = on_attach_callback,
+                    capabilities = capabilities_fixed
+                })
+                vim.cmd [[ do User LspAttachBuffers ]]
+            end)
         end
     }
     -- Auto completion
@@ -328,6 +318,7 @@ require('packer').startup({function(use)
             },
             {
                 'hrsh7th/cmp-nvim-lsp',
+                module = "cmp_nvim_lsp",
                 after = "nvim-lspconfig",
             },
             {
