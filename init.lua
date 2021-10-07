@@ -49,7 +49,7 @@ require('packer').startup({function(use)
     -- Packer can manage itself
     use {
         'wbthomason/packer.nvim',
-        event = 'VimEnter',
+        opt = true,
     }
     -- Core
     use {
@@ -71,7 +71,7 @@ require('packer').startup({function(use)
     -- UI
     use {
         'navarasu/onedark.nvim',
-        after = 'packer.nvim',
+        event = "BufEnter",
         config = function()
             vim.cmd[[colorscheme onedark]]
         end
