@@ -10,7 +10,7 @@ local function ensure_packer_installed()
 end
 ensure_packer_installed()
 
-local function setup_basic()
+local function setup_basic_nvim_options()
     -- use <space> as leader key
     vim.g.mapleader = " "
     vim.opt.timeoutlen = 400
@@ -42,7 +42,7 @@ local function setup_basic()
     vim.o.expandtab = true
     vim.o.statusline='%f  %y%m%r%h%w%=[%l,%v]      [%L,%p%%] %n'
 end
-setup_basic()
+setup_basic_nvim_options()
 
 -- configuration
 require('packer').startup({function(use)
@@ -220,7 +220,7 @@ require('packer').startup({function(use)
     -- lsp
     use {
         'neovim/nvim-lspconfig',
-        event = "InsertEnter",
+        event = "BufRead",
         config = function()
             require('lspconfig')
         end
