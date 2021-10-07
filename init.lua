@@ -1,14 +1,9 @@
 -- ensure pakcer is installed
 local function ensure_packer_installed()
-    -- check if packer is installed as startup plugin
-    local install_path = vim.fn.stdpath('data')..'/site/pack/packer/start/packer.nvim'
-    if vim.fn.empty(vim.fn.glob(install_path)) <= 0 then
-        return
-    end
     -- if packer is also not installed as opt, install it
-    local install_opt_path = vim.fn.stdpath('data')..'/site/pack/packer/opt/packer.nvim'
-    if vim.fn.empty(vim.fn.glob(install_opt_path)) > 0 then
-        vim.fn.system({'git', 'clone', '--depth', '1', 'https://github.com/wbthomason/packer.nvim', install_opt_path})
+    local install_path = vim.fn.stdpath('data')..'/site/pack/packer/opt/packer.nvim'
+    if vim.fn.empty(vim.fn.glob(install_path)) > 0 then
+        vim.fn.system({'git', 'clone', '--depth', '1', 'https://github.com/wbthomason/packer.nvim', install_path})
     end
     -- load packer.nvim
     vim.cmd 'packadd packer.nvim'
