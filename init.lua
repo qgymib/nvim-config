@@ -237,8 +237,11 @@ require('packer').startup({function(use)
             local lsp_installer = require("nvim-lsp-installer")
             lsp_installer.on_server_ready(function(server)
                 local on_attach_callback = function(client, bufnr)
+                    -- Enable lsp_signature
+                    require("lsp_signature").on_attach()
                     -- Enable completion triggered by <c-x><c-o>
                     vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
+                    -- Register shortcut
                     require("which-key").register(
                         {
                             [ "la" ] = {
@@ -279,6 +282,29 @@ require('packer').startup({function(use)
                 })
                 vim.cmd [[ do User LspAttachBuffers ]]
             end)
+        end
+    }
+    use {
+        "ray-x/lsp_signature.nvim",
+        after = "nvim-lspconfig",
+        config = function()
+            require('lsp_signature').setup{
+                bind = true,
+                doc_lines = 2,
+                floating_window = true,
+                fix_pos = true,
+                hint_enable = true,
+                hint_prefix = " ",
+                hint_scheme = "String",
+                hi_parameter = "Search",
+                max_height = 22,
+                max_width = 120, -- max_width of signature floating_window, line will be wrapped if exceed max_width
+                handler_opts = {
+                   border = "single", -- double, single, shadow, none
+                },
+                zindex = 200, -- by default it will be on top of all floating windows, set to 50 send it to bottom
+                padding = "", -- character to pad on left and right of signature can be ' ', or '|'  etc
+            }
         end
     }
     -- Auto completion
