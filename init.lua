@@ -1,15 +1,7 @@
--- ensure pakcer is installed
-local function ensure_packer_installed()
-    -- if packer is also not installed as opt, install it
-    local install_path = vim.fn.stdpath('data')..'/site/pack/packer/opt/packer.nvim'
-    if vim.fn.empty(vim.fn.glob(install_path)) > 0 then
-        vim.fn.system({'git', 'clone', '--depth', '1', 'https://github.com/wbthomason/packer.nvim', install_path})
-    end
-    -- load packer.nvim
-    vim.cmd 'packadd packer.nvim'
-end
-ensure_packer_installed()
+-- Global configuration storage
+QConfig = {}
 
+-- basic nvim options
 local function setup_basic_nvim_options()
     -- use <space> as leader key
     vim.g.mapleader = " "
@@ -44,6 +36,63 @@ local function setup_basic_nvim_options()
 end
 setup_basic_nvim_options()
 
+-- global key mappings
+QConfig.which_key = {
+    normal_mode = {
+        b = {
+            name = "+buffer",
+            l = { "<cmd>lua require('telescope.builtin').buffers()<cr>", "Lists open buffers" }
+        },
+        f = {
+            name = "+file",
+            o = { "<cmd>lua require('telescope.builtin').file_browser()<cr>", "Open file" },
+            t = { "<cmd>NvimTreeToggle<cr>", "Toggle Tree View" },
+            r = { "<cmd>NvimTreeRefresh<cr>", "Refresh Tree View" }
+        },
+        m = {
+            name = "+misc",
+            d = { "<cmd>Dashboard<cr>", "Open Dashboard" },
+        },
+        p = {
+            name = "+packer",
+            c = { "<cmd>PackerCompile<cr>", "Compile" },
+            i = { "<cmd>PackerInstall<cr>", "Install" },
+            r = { "<cmd>lua require('utils').reload_lv_config()<cr>", "Reload" },
+            s = { "<cmd>PackerSync<cr>", "Sync" },
+            S = { "<cmd>PackerStatus<cr>", "Status" },
+            u = { "<cmd>PackerUpdate<cr>", "Update" },
+        },
+        s = {
+            name = "+search",
+            f = { "<cmd>lua require('telescope.builtin').find_files()<cr>", "Find files (respects .gitignore)"},
+            w = { "<cmd>lua require('telescope.builtin').grep_string()<cr>", "Find cursor word" },
+            s = { "<cmd>lua require('telescope.builtin').live_grep()<cr>", "Find string" },
+        },
+    },
+    lsp_mode = {
+        l = {
+            name = "+lsp",
+            a = { "<cmd>lua require('telescope.builtin').lsp_code_actions()<cr>", "List Code Actions" },
+            d = { "<cmd>lua require('telescope.builtin').lsp_definitions()<cr>", "Definition" },
+            r = { "<cmd>lua require('telescope.builtin').lsp_references()<cr>", "References" },
+            R = { "<cmd>lua vim.lsp.buf.rename()<cr>", "Rename" },
+            s = { "<cmd>lua require('telescope.builtin').lsp_document_symbols()<cr>", "List symbols" }
+        }
+    },
+}
+
+-- ensure pakcer is installed
+local function ensure_packer_installed()
+    -- if packer is also not installed as opt, install it
+    local install_path = vim.fn.stdpath('data')..'/site/pack/packer/opt/packer.nvim'
+    if vim.fn.empty(vim.fn.glob(install_path)) > 0 then
+        vim.fn.system({'git', 'clone', '--depth', '1', 'https://github.com/wbthomason/packer.nvim', install_path})
+    end
+    -- load packer.nvim
+    vim.cmd 'packadd packer.nvim'
+end
+ensure_packer_installed()
+
 -- configuration
 require('packer').startup({function(use)
     -- Packer can manage itself
@@ -56,17 +105,11 @@ require('packer').startup({function(use)
         'folke/which-key.nvim',
         config = function()
             require('which-key').setup()
-            -- pre-defined mapping groups
-            require('which-key').register(
-                {
-                    [ "b" ] = { name = "+buffer" },
-                    [ "f" ] = { name = "+file" },
-                    [ "l" ] = { name = "+lsp" },
-                    [ "m" ] = { name = "+misc" }
-                },
-                { prefix = "<leader>" }
+            require("which-key").register(
+                QConfig.which_key.normal_mode,
+                { mode = "n", prefix = "<leader>" }
             )
-        end,
+        end
     }
     -- UI
     use {
@@ -101,14 +144,6 @@ require('packer').startup({function(use)
     use {
         'glepnir/dashboard-nvim',
         event = "BufWinEnter",
-        setup = function()
-            require('which-key').register {
-                [ "<leader>md" ] = {
-                    "<cmd>Dashboard<cr>",
-                    "Open Dashboard"
-                }
-            }
-        end,
         config = function()
             vim.g.dashboard_default_executive = 'telescope'
             vim.g.dashboard_custom_header = {
@@ -194,25 +229,6 @@ require('packer').startup({function(use)
         },
         module = "telescope",
         cmd = "Telescope",
-        setup = function ()
-            require('which-key').register(
-                {
-                    [ "bl" ] = {
-                        "<cmd>lua require('telescope.builtin').buffers()<cr>",
-                        "Lists open buffers"
-                    },
-                    [ "ff" ] = {
-                        "<cmd>lua require('telescope.builtin').find_files()<cr>",
-                        "Find file in your current working directory, respects .gitignore"
-                    },
-                    [ "fo" ] = {
-                        "<cmd>lua require('telescope.builtin').file_browser()<cr>",
-                        "Open file"
-                    }
-                },
-                { prefix = "<leader>" }
-            )
-        end,
         config = function()
             require('telescope').setup()
         end
@@ -238,28 +254,7 @@ require('packer').startup({function(use)
                     vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
                     -- Register shortcut
                     require("which-key").register(
-                        {
-                            [ "la" ] = {
-                                "<cmd>lua require('telescope.builtin').lsp_code_actions()<cr>",
-                                "List Code Actions"
-                            },
-                            [ "ld" ] = {
-                                "<cmd>lua require('telescope.builtin').lsp_definitions()<cr>",
-                                "Definition"
-                            },
-                            [ "lr" ] = {
-                                "<cmd>lua require('telescope.builtin').lsp_references()<cr>",
-                                "References"
-                            },
-                            [ "lR" ] = {
-                                "<cmd>lua vim.lsp.buf.rename()<cr>",
-                                "Rename"
-                            },
-                            [ "ls" ] = {
-                                "<cmd>lua require('telescope.builtin').lsp_document_symbols()<cr>",
-                                "List symbols"
-                            },
-                        },
+                        QConfig.which_key.lsp_mode,
                         {
                             prefix = "<leader>",
                             buffer = bufnr,
@@ -396,21 +391,6 @@ require('packer').startup({function(use)
             require('nvim-tree').setup {
                 ignore_ft_on_setup = { "dashboard" },
             }
-        end,
-        setup = function()
-            require('which-key').register (
-                {
-                    ["ft"] = {
-                        "<cmd>NvimTreeToggle<cr>",
-                        "Toggle Tree View"
-                    },
-                    ["fr"] = {
-                        "<cmd>NvimTreeRefresh<cr>",
-                        "Refresh Tree View"
-                    },
-                },
-                { prefix = "<leader>" }
-            )
         end
     }
 end,
