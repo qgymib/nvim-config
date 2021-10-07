@@ -74,6 +74,7 @@ QConfig.which_key = {
             name = "+lsp",
             a = { "<cmd>lua require('telescope.builtin').lsp_code_actions()<cr>", "List Code Actions" },
             d = { "<cmd>lua require('telescope.builtin').lsp_definitions()<cr>", "Definition" },
+            o = { "<cmd>SymbolsOutline<cr>", "Outline" },
             r = { "<cmd>lua require('telescope.builtin').lsp_references()<cr>", "References" },
             R = { "<cmd>lua vim.lsp.buf.rename()<cr>", "Rename" },
             s = { "<cmd>lua require('telescope.builtin').lsp_document_symbols()<cr>", "List symbols" }
@@ -211,8 +212,7 @@ require('packer').startup({function(use)
         'akinsho/bufferline.nvim',
         after = 'nvim-web-devicons',
         config = function()
-            require("bufferline").setup {
-            }
+            require("bufferline").setup()
         end
     }
     use {
@@ -296,6 +296,14 @@ require('packer').startup({function(use)
                 padding = "", -- character to pad on left and right of signature can be ' ', or '|'  etc
             }
         end
+    }
+    use {
+        "simrat39/symbols-outline.nvim",
+        cmd = {
+            "SymbolsOutline",
+            "SymbolsOutlineOpen",
+            "SymbolsOutlineClose",
+        },
     }
     -- Auto completion
     use {
