@@ -310,8 +310,13 @@ require('packer').startup({function(use)
         'hrsh7th/nvim-cmp',
         requires = {
             {
-                'rafamadriz/friendly-snippets',
+                "onsails/lspkind-nvim",
+                module = "lspkind",
                 event = "InsertEnter",
+            },
+            {
+                'rafamadriz/friendly-snippets',
+                after = "lspkind-nvim",
             },
             {
                 'L3MON4D3/LuaSnip',
@@ -364,10 +369,22 @@ require('packer').startup({function(use)
             },
         },
         module = "cmp",
-        after = 'friendly-snippets',
+        after = 'lspkind-nvim',
         config = function()
             local cmp = require('cmp')
             cmp.setup {
+                formatting = {
+                    format = require("lspkind").cmp_format({
+                        with_text = true,
+                        menu = ({
+                            nvim_lsp = "[LSP]",
+                            luasnip = "[SNIP]",
+                            buffer = "[BUF]",
+                            nvim_lua = "[LUA]",
+                            path = "[PATH]"
+                        })
+                    })
+                },
                 snippet = {
                     expand = function(args)
                         require("luasnip").lsp_expand(args.body)
