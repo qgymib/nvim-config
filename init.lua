@@ -55,14 +55,6 @@ require('packer').startup({function(use)
     use {
         'wbthomason/packer.nvim',
         event = 'VimEnter',
-        config = function()
-            vim.cmd([[
-                augroup packer_user_config
-                  autocmd!
-                  autocmd BufWritePost init.lua source <afile> | PackerCompile
-                augroup end
-            ]])
-        end
     }
     -- Core
     use {
