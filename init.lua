@@ -68,6 +68,10 @@ QConfig.which_key = {
             w = { "<cmd>lua require('telescope.builtin').grep_string()<cr>", "Find cursor word" },
             s = { "<cmd>lua require('telescope.builtin').live_grep()<cr>", "Find string" },
         },
+        t = {
+            name = "+terminal",
+            t = { "<cmd>ToggleTerm<cr>", "Toggle terminal" },
+        }
     },
     lsp_mode = {
         l = {
@@ -416,6 +420,13 @@ require('packer').startup({function(use)
             require('nvim-tree').setup {
                 ignore_ft_on_setup = { "dashboard" },
             }
+        end
+    }
+    use {
+        "akinsho/toggleterm.nvim",
+        cmd = { "ToggleTerm", "ToggleTermOpenAll", "ToggleTermCloseAll", "TermExec" },
+        config = function()
+            require("toggleterm").setup()
         end
     }
 end,
