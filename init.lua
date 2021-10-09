@@ -57,9 +57,8 @@ QConfig.which_key = {
             name = "+packer",
             c = { "<cmd>PackerCompile<cr>", "Compile" },
             i = { "<cmd>PackerInstall<cr>", "Install" },
-            r = { "<cmd>lua require('utils').reload_lv_config()<cr>", "Reload" },
-            s = { "<cmd>PackerSync<cr>", "Sync" },
-            S = { "<cmd>PackerStatus<cr>", "Status" },
+            s = { "<cmd>PackerStatus<cr>", "Status" },
+            S = { "<cmd>PackerSync<cr>", "Sync" },
             u = { "<cmd>PackerUpdate<cr>", "Update" },
         },
         s = {
@@ -81,7 +80,8 @@ QConfig.which_key = {
             o = { "<cmd>SymbolsOutline<cr>", "Outline" },
             r = { "<cmd>lua require('telescope.builtin').lsp_references()<cr>", "References" },
             R = { "<cmd>lua vim.lsp.buf.rename()<cr>", "Rename" },
-            s = { "<cmd>lua require('telescope.builtin').lsp_document_symbols()<cr>", "List symbols" }
+            s = { "<cmd>lua vim.lsp.buf.signature_help()<cr>", "Signature help" },
+            S = { "<cmd>lua require('telescope.builtin').lsp_document_symbols()<cr>", "List symbols" },
         }
     },
 }
