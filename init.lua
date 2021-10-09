@@ -216,7 +216,11 @@ require('packer').startup({function(use)
         'akinsho/bufferline.nvim',
         after = 'nvim-web-devicons',
         config = function()
-            require("bufferline").setup()
+            require("bufferline").setup({
+                options = {
+                    right_mouse_command = "vertical sbuffer %d",
+                },
+            })
         end
     }
     use {
