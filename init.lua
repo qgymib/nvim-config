@@ -120,6 +120,15 @@ require('packer').startup({function(use)
             )
         end
     }
+    use {
+        "qgymib/luabuild.nvim",
+        after = "plenary.nvim",
+        module = "luabuild",
+        opt = true,
+    }
+    use {
+        "qgymib/luabuild-addons.nvim",
+    }
     -- UI
     use {
         'navarasu/onedark.nvim',
@@ -236,11 +245,18 @@ require('packer').startup({function(use)
     }
     use {
         'nvim-telescope/telescope.nvim',
-        after = "plenary.nvim",
+        requires = {
+            {
+                "nvim-telescope/telescope-fzf-native.nvim",
+                run = require("luabuild-addons").make.telescope_fzf_native,
+            }
+        },
+        after = { "plenary.nvim" },
         module = "telescope",
         cmd = "Telescope",
         config = function()
             require('telescope').setup()
+            require('telescope').load_extension('fzf')
         end
     }
     -- lsp
