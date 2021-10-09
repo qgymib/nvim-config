@@ -107,6 +107,10 @@ require('packer').startup({function(use)
     }
     -- Core
     use {
+        "nvim-lua/plenary.nvim",
+        module = "plenary",
+    }
+    use {
         'folke/which-key.nvim',
         config = function()
             require('which-key').setup()
@@ -232,9 +236,7 @@ require('packer').startup({function(use)
     }
     use {
         'nvim-telescope/telescope.nvim',
-        requires = {
-            { 'nvim-lua/plenary.nvim' },
-        },
+        after = "plenary.nvim",
         module = "telescope",
         cmd = "Telescope",
         config = function()
