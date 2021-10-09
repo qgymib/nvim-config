@@ -266,13 +266,12 @@ require('packer').startup({function(use)
                     )
                 end
 
-                local capabilities_fixed = vim.lsp.protocol.make_client_capabilities()
-                capabilities_fixed = require("cmp_nvim_lsp").update_capabilities(capabilities_fixed)
-
                 -- This setup() function is exactly the same as lspconfig's setup function (:help lspconfig-quickstart)
                 server:setup({
                     on_attach = on_attach_callback,
-                    capabilities = capabilities_fixed
+                    capabilities = require("cmp_nvim_lsp").update_capabilities(
+                        vim.lsp.protocol.make_client_capabilities()
+                    )
                 })
                 vim.cmd [[ do User LspAttachBuffers ]]
             end)
@@ -377,6 +376,9 @@ require('packer').startup({function(use)
         config = function()
             local cmp = require('cmp')
             cmp.setup {
+                completion = {
+                    keyword_length = 2,
+                },
                 formatting = {
                     format = require("lspkind").cmp_format({
                         with_text = true,
@@ -389,17 +391,17 @@ require('packer').startup({function(use)
                         })
                     })
                 },
-                snippet = {
-                    expand = function(args)
-                        require("luasnip").lsp_expand(args.body)
-                    end,
-                },
                 mapping = {
                     ['<C-d>'] = cmp.mapping.scroll_docs(-4),
                     ['<C-f>'] = cmp.mapping.scroll_docs(4),
                     ['<C-Space>'] = cmp.mapping.complete(),
                     ['<C-e>'] = cmp.mapping.close(),
                     ['<CR>'] = cmp.mapping.confirm({ select = true }),
+                },
+                snippet = {
+                    expand = function(args)
+                        require("luasnip").lsp_expand(args.body)
+                    end,
                 },
                 sources = {
                     { name = 'nvim_lsp' },
