@@ -249,7 +249,9 @@ require('packer').startup({function(use)
         requires = {
             {
                 "nvim-telescope/telescope-fzf-native.nvim",
-                run = require("luabuild-addons").make.telescope_fzf_native,
+                run = function(plugin)
+                    require("luabuild-addons").make.telescope_fzf_native(plugin)
+                end,
             }
         },
         after = { "plenary.nvim" },
