@@ -3,7 +3,7 @@ QConfig = {}
 QConfig.fn = {}
 
 -- basic nvim options
-local function setup_basic_nvim_options()
+QConfig.fn.setup_basic_nvim_options = function()
     -- use <space> as leader key
     vim.g.mapleader = " "
     vim.opt.timeoutlen = 400
@@ -39,7 +39,7 @@ local function setup_basic_nvim_options()
     vim.api.nvim_set_keymap('n', "<Home>", [[<cmd>lua QConfig.fn.LineHome()<cr>]], { noremap = true, silent = true })
     vim.api.nvim_set_keymap('i', "<Home>", [[<cmd>lua QConfig.fn.LineHome()<cr>]], { noremap = true, silent = true })
 end
-setup_basic_nvim_options()
+QConfig.fn.setup_basic_nvim_options()
 
 -- global key mappings
 QConfig.which_key = {
@@ -104,11 +104,12 @@ end
 -- ensure pakcer is installed
 local function ensure_packer_installed()
     -- if packer is also not installed as opt, install it
-    local install_path = vim.fn.stdpath('data')..'/site/pack/packer/opt/packer.nvim'
-    if vim.fn.empty(vim.fn.glob(install_path)) > 0 then
-        vim.fn.system({'git', 'clone', '--depth', '1', 'https://github.com/wbthomason/packer.nvim', install_path})
+    local install_path = vim.fn.stdpath('data')..'/site/pack/packer/start/packer.nvim'
+    if vim.fn.empty(vim.fn.glob(install_path)) == 0 then
+        return
     end
     -- load packer.nvim
+    vim.fn.system({'git', 'clone', '--depth', '1', 'https://github.com/wbthomason/packer.nvim', install_path})
     vim.cmd 'packadd packer.nvim'
 end
 ensure_packer_installed()
@@ -118,7 +119,6 @@ require('packer').startup({function(use)
     -- Packer can manage itself
     use {
         'wbthomason/packer.nvim',
-        opt = true,
     }
     -- Core
     use {
@@ -133,7 +133,11 @@ require('packer').startup({function(use)
             })
             require("which-key").register(
                 QConfig.which_key.normal_mode,
-                { mode = "n", prefix = "<leader>" }
+                {
+                    mode = "n",
+                    prefix = "<leader>",
+                    silent = false,
+                }
             )
         end
     }
