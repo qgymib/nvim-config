@@ -1,5 +1,6 @@
 -- Global configuration storage
 QConfig = {}
+QConfig.fn = {}
 
 -- basic nvim options
 local function setup_basic_nvim_options()
@@ -20,7 +21,7 @@ local function setup_basic_nvim_options()
     vim.opt.number = true
     vim.opt.ruler = false
     -- Don't show any numbers inside terminals
-    vim.cmd [[ au TermOpen term://* setlocal nonumber norelativenumber | setfiletype terminal ]]
+    vim.cmd [[au TermOpen term://* setlocal nonumber norelativenumber | setfiletype terminal]]
     vim.opt.signcolumn = "number"
     vim.opt.splitbelow = true
     vim.opt.splitright = true
@@ -33,6 +34,10 @@ local function setup_basic_nvim_options()
     vim.o.softtabstop = 4
     vim.o.expandtab = true
     vim.o.statusline='%f  %y%m%r%h%w%=[%l,%v]      [%L,%p%%] %n'
+
+    -- key map
+    vim.api.nvim_set_keymap('n', "<Home>", [[<cmd>lua QConfig.fn.LineHome()<cr>]], { noremap = true, silent = true })
+    vim.api.nvim_set_keymap('i', "<Home>", [[<cmd>lua QConfig.fn.LineHome()<cr>]], { noremap = true, silent = true })
 end
 setup_basic_nvim_options()
 
@@ -87,6 +92,15 @@ QConfig.which_key = {
     },
 }
 
+--- Goto the beginning of first non-whitespace character in line
+QConfig.fn.LineHome = function ()
+    local x = vim.fn.col('.')
+    vim.cmd[[execute "normal ^"]]
+    if x == vim.fn.col('.') then
+        vim.cmd[[execute "normal 0"]]
+    end
+end
+
 -- ensure pakcer is installed
 local function ensure_packer_installed()
     -- if packer is also not installed as opt, install it
@@ -114,7 +128,9 @@ require('packer').startup({function(use)
     use {
         'folke/which-key.nvim',
         config = function()
-            require('which-key').setup()
+            require('which-key').setup({
+                ignore_missing = true,
+            })
             require("which-key").register(
                 QConfig.which_key.normal_mode,
                 { mode = "n", prefix = "<leader>" }
@@ -296,7 +312,7 @@ require('packer').startup({function(use)
                         vim.lsp.protocol.make_client_capabilities()
                     )
                 })
-                vim.cmd [[ do User LspAttachBuffers ]]
+                vim.cmd [[do User LspAttachBuffers]]
             end)
         end
     }
