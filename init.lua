@@ -117,9 +117,7 @@ ensure_packer_installed()
 -- configuration
 require('packer').startup({function(use)
     -- Packer can manage itself
-    use {
-        'wbthomason/packer.nvim',
-    }
+    use { 'wbthomason/packer.nvim' }
     -- Core
     use {
         "nvim-lua/plenary.nvim",
@@ -127,6 +125,7 @@ require('packer').startup({function(use)
     }
     use {
         'folke/which-key.nvim',
+        event = "BufWinEnter",
         config = function()
             require('which-key').setup({
                 ignore_missing = true,
