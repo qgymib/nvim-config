@@ -56,6 +56,7 @@ QConfig.which_key = {
         p = {
             name = "+packer",
             c = { "<cmd>PackerCompile<cr>", "Compile" },
+            C = { "<cmd>PackerClean<cr>", "Clean" },
             i = { "<cmd>PackerInstall<cr>", "Install" },
             s = { "<cmd>PackerStatus<cr>", "Status" },
             S = { "<cmd>PackerSync<cr>", "Sync" },
