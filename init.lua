@@ -142,12 +142,15 @@ require('packer').startup({function(use)
     }
     use {
         "qgymib/luabuild.nvim",
+        requires = {
+            {
+                "qgymib/luabuild-addons.nvim",
+                opt = true,
+            }
+        },
         after = "plenary.nvim",
         module = "luabuild",
         opt = true,
-    }
-    use {
-        "qgymib/luabuild-addons.nvim",
     }
     -- UI
     use {
@@ -263,16 +266,16 @@ require('packer').startup({function(use)
             require('lualine').setup()
         end
     }
+    -- telescope
+    use {
+        "nvim-telescope/telescope-fzf-native.nvim",
+        run = function(plugin)
+            vim.cmd[[packadd luabuild-addons.nvim]]
+            require("luabuild-addons").make.telescope_fzf_native(plugin)
+        end,
+    }
     use {
         'nvim-telescope/telescope.nvim',
-        requires = {
-            {
-                "nvim-telescope/telescope-fzf-native.nvim",
-                run = function(plugin)
-                    require("luabuild-addons").make.telescope_fzf_native(plugin)
-                end,
-            }
-        },
         after = { "plenary.nvim" },
         module = "telescope",
         cmd = "Telescope",
