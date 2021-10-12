@@ -273,6 +273,7 @@ require('packer').startup({function(use)
             vim.cmd[[packadd luabuild-addons.nvim]]
             require("luabuild-addons").make.telescope_fzf_native(plugin)
         end,
+        opt = true,
     }
     use {
         'nvim-telescope/telescope.nvim',
@@ -281,6 +282,8 @@ require('packer').startup({function(use)
         cmd = "Telescope",
         config = function()
             require('telescope').setup()
+
+            vim.cmd[[packadd telescope-fzf-native.nvim]]
             require('telescope').load_extension('fzf')
         end
     }
