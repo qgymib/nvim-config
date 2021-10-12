@@ -21,7 +21,7 @@ local function setup_basic_nvim_options()
     vim.opt.number = true
     vim.opt.ruler = false
     -- Don't show any numbers inside terminals
-    vim.cmd [[au TermOpen term://* setlocal nonumber norelativenumber | setfiletype terminal]]
+    vim.cmd[[au TermOpen term://* setlocal nonumber norelativenumber | setfiletype terminal]]
     vim.opt.signcolumn = "number"
     vim.opt.splitbelow = true
     vim.opt.splitright = true
@@ -52,7 +52,8 @@ QConfig.which_key = {
             name = "+file",
             o = { "<cmd>lua require('telescope.builtin').file_browser()<cr>", "Open file" },
             t = { "<cmd>NvimTreeToggle<cr>", "Toggle Tree View" },
-            r = { "<cmd>NvimTreeRefresh<cr>", "Refresh Tree View" }
+            r = { "<cmd>NvimTreeRefresh<cr>", "Refresh Tree View" },
+            p = { "<cmd>Telescope projects<cr>", "Open project" },
         },
         m = {
             name = "+misc",
@@ -283,8 +284,11 @@ require('packer').startup({function(use)
         config = function()
             require('telescope').setup()
 
+            -- telescope-fzf-native.nvim
             vim.cmd[[packadd telescope-fzf-native.nvim]]
             require('telescope').load_extension('fzf')
+            -- project.nvim
+            require('telescope').load_extension('projects')
         end
     }
     -- lsp
@@ -444,10 +448,23 @@ require('packer').startup({function(use)
         requires = 'kyazdani42/nvim-web-devicons',
         cmd = { "NvimTreeToggle", "NvimTreeFocus" },
         config = function()
+            vim.g.nvim_tree_respect_buf_cwd = 1
             require('nvim-tree').setup {
                 ignore_ft_on_setup = { "dashboard" },
+                update_cwd = true,
+                update_focused_file = {
+                    enable = true,
+                    update_cwd = true
+                },
             }
         end
+    }
+    use {
+        "ahmedkhalf/project.nvim",
+        config = function()
+            require("project_nvim").setup()
+        end,
+        event = "VimEnter",
     }
     use {
         "akinsho/toggleterm.nvim",
