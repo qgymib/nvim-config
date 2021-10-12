@@ -33,7 +33,8 @@ local function setup_basic_nvim_options()
     vim.o.tabstop = 4
     vim.o.softtabstop = 4
     vim.o.expandtab = true
-    vim.o.statusline='%f  %y%m%r%h%w%=[%l,%v]      [%L,%p%%] %n'
+    vim.o.statusline = '%f  %y%m%r%h%w%=[%l,%v]      [%L,%p%%] %n'
+    vim.o.scrolloff = 3
 
     -- key map
     vim.api.nvim_set_keymap('n', "<Home>", [[<cmd>lua QConfig.fn.LineHome()<cr>]], { noremap = true, silent = true })
