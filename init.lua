@@ -3,7 +3,7 @@ QConfig = {}
 QConfig.fn = {}
 
 -- basic nvim options
-QConfig.fn.setup_basic_nvim_options = function()
+local function setup_basic_nvim_options()
     -- use <space> as leader key
     vim.g.mapleader = " "
     vim.opt.timeoutlen = 400
@@ -39,7 +39,7 @@ QConfig.fn.setup_basic_nvim_options = function()
     vim.api.nvim_set_keymap('n', "<Home>", [[<cmd>lua QConfig.fn.LineHome()<cr>]], { noremap = true, silent = true })
     vim.api.nvim_set_keymap('i', "<Home>", [[<cmd>lua QConfig.fn.LineHome()<cr>]], { noremap = true, silent = true })
 end
-QConfig.fn.setup_basic_nvim_options()
+setup_basic_nvim_options()
 
 -- global key mappings
 QConfig.which_key = {
