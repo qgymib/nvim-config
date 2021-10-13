@@ -47,7 +47,8 @@ QConfig.which_key = {
     normal_mode = {
         b = {
             name = "+buffer",
-            l = { "<cmd>lua require('telescope.builtin').buffers()<cr>", "Lists open buffers" }
+            l = { "<cmd>lua require('telescope.builtin').buffers()<cr>", "Lists open buffers" },
+            j = { "<cmd>lua require('telescope.builtin').jumplist()<cr>", "Jump list" },
         },
         f = {
             name = "+file",
@@ -59,6 +60,8 @@ QConfig.which_key = {
         m = {
             name = "+misc",
             d = { "<cmd>Dashboard<cr>", "Open Dashboard" },
+            m = { "<cmd>lua require('telescope.builtin').marks()<cr>", "Book marks" },
+            p = { "<cmd>lua require('telescope.builtin').builtin()<cr>", "Telescope pickers" },
         },
         p = {
             name = "+packer",
