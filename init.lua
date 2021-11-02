@@ -50,6 +50,10 @@ QConfig.which_key = {
             l = { "<cmd>lua require('telescope.builtin').buffers()<cr>", "Lists open buffers" },
             j = { "<cmd>lua require('telescope.builtin').jumplist()<cr>", "Jump list" },
         },
+        e = {
+            name = "+editor",
+            t = { "<cmd>retab<cr>", "Convert TAB to SPC" },
+        },
         f = {
             name = "+file",
             o = { "<cmd>lua require('telescope.builtin').file_browser()<cr>", "Open file" },
@@ -265,7 +269,7 @@ require('packer').startup({function(use)
         end
     }
     use {
-        'shadmansaleh/lualine.nvim',
+        'nvim-lualine/lualine.nvim',
         after = 'nvim-web-devicons',
         config = function()
             require('lualine').setup()
