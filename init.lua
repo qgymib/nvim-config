@@ -36,6 +36,9 @@ local function setup_basic_nvim_options()
     vim.o.statusline = '%f  %y%m%r%h%w%=[%l,%v]      [%L,%p%%] %n'
     vim.o.scrolloff = 3
 
+
+    vim.cmd[[au FocusGained,BufEnter * :silent! !]]
+
     -- key map
     vim.api.nvim_set_keymap('n', "<Home>", [[<cmd>lua QConfig.fn.LineHome()<cr>]], { noremap = true, silent = true })
     vim.api.nvim_set_keymap('i', "<Home>", [[<cmd>lua QConfig.fn.LineHome()<cr>]], { noremap = true, silent = true })
@@ -310,6 +313,14 @@ require('packer').startup({function(use)
     use {
         'williamboman/nvim-lsp-installer',
         after = "nvim-lspconfig",
+        cmd = {
+            'LspInstallInfo',
+            'LspInstall',
+            'LspUninstall',
+            'LspUninstallAll',
+            'LspInstallLog',
+            'LspPrintInstalled'
+        },
         config = function()
             local lsp_installer = require("nvim-lsp-installer")
             lsp_installer.on_server_ready(function(server)
