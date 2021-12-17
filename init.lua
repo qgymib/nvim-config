@@ -135,8 +135,15 @@ QConfig.plugin.dashboard_nvim.config = function()
     }
 end
 
+QConfig.plugin.telescop = {}
+QConfig.plugin.telescop.config = function()
+    require('telescope').setup()
+end
+
 QConfig.plugins = function(use)
-    use 'wbthomason/packer.nvim'
+    use { 'wbthomason/packer.nvim' }
+    use { 'nvim-lua/plenary.nvim' }
+    use { 'kyazdani42/nvim-web-devicons' }
     use {
         'marko-cerovac/material.nvim',
         config = QConfig.plugin.material.config
@@ -165,6 +172,10 @@ QConfig.plugins = function(use)
     use {
         'windwp/nvim-autopairs',
         config = QConfig.plugin.nvim_autopairs.config
+    }
+    use {
+        'nvim-telescope/telescope.nvim',
+        config = QConfig.plugin.telescop.config
     }
     use { 'onsails/lspkind-nvim' }
     use { 'hrsh7th/nvim-cmp' }
@@ -241,7 +252,7 @@ local function setup_auto_completion()
         }),
         formatting = {
             format = lspkind.cmp_format({
-                with_text = false, -- do not show text alongside icons
+                with_text = true, -- do not show text alongside icons
                 maxwidth = 50, -- prevent the popup from showing more than provided characters (e.g 50 will not show more than 50 characters)
             })
         }
@@ -290,6 +301,7 @@ local function setup_basic_nvim_options()
     vim.cmd[[au FocusGained,BufEnter * :silent! !]]
 
     -- key map
+    vim.api.nvim_set_keymap('n', "<F12>", [[<cmd>lua require('telescope.builtin').lsp_definitions()<cr>]], { noremap = true, silent = true })
     vim.api.nvim_set_keymap('n', "<Home>", [[<cmd>lua QConfig.fn.GoToLineBegin()<cr>]], { noremap = true, silent = true })
     vim.api.nvim_set_keymap('i', "<Home>", [[<cmd>lua QConfig.fn.GoToLineBegin()<cr>]], { noremap = true, silent = true })
 end
