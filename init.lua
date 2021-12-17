@@ -1,8 +1,259 @@
--- Global configuration storage
+-- Config pre-setup
 QConfig = {}
 QConfig.fn = {}
+QConfig.plugin = {}
 
--- basic nvim options
+--- Goto the beginning of first non-whitespace character in line
+QConfig.fn.GoToLineBegin = function ()
+    local x = vim.fn.col('.')
+    vim.cmd[[execute "normal ^"]]
+    if x == vim.fn.col('.') then
+        vim.cmd[[execute "normal 0"]]
+    end
+end
+
+QConfig.plugin.material = {}
+QConfig.plugin.material.config = function()
+    vim.cmd[[colorscheme material]]
+end
+
+QConfig.plugin.nvim_lspconfig = {}
+QConfig.plugin.nvim_lspconfig.config = function()
+end
+
+QConfig.plugin.nvim_lsp_installer = {}
+QConfig.plugin.nvim_lsp_installer.sumneko_lua = function()
+    local opts = {}
+
+    local runtime_path = vim.split(package.path, ';')
+    table.insert(runtime_path, "lua/?.lua")
+    table.insert(runtime_path, "lua/?/init.lua")
+
+    opts.settings = {
+        Lua = {
+            runtime = {
+                -- Tell the language server which version of Lua you're using (most likely LuaJIT in the case of Neovim)
+                version = 'LuaJIT',
+                -- Setup your lua path
+                path = runtime_path,
+            },
+            diagnostics = {
+                -- Get the language server to recognize the `vim` global
+                globals = { 'vim' },
+            },
+            workspace = {
+                -- Make the server aware of Neovim runtime files
+                library = vim.api.nvim_get_runtime_file("", true),
+            },
+            -- Do not send telemetry data containing a randomized but unique identifier
+            telemetry = {
+                enable = false,
+            },
+        },
+    }
+
+    return opts
+end
+QConfig.plugin.nvim_lsp_installer.config = function()
+    local lsp_installer = require("nvim-lsp-installer")
+
+    lsp_installer.on_server_ready(function(server)
+        local opts = {}
+        -- Add additional capabilities supported by nvim-cmp
+        opts.capabilities = require('cmp_nvim_lsp').update_capabilities(
+            vim.lsp.protocol.make_client_capabilities())
+        -- sumneko_lua configuration
+        if server.name == "sumneko_lua" then
+            opts = vim.tbl_deep_extend("force", opts, QConfig.plugin.nvim_lsp_installer.sumneko_lua())
+        end
+        server:setup(opts)
+    end)
+end
+
+QConfig.plugin.nvim_treesitter = {}
+QConfig.plugin.nvim_treesitter.config = function()
+    require('nvim-treesitter.configs').setup({
+        ensure_installed = "lua",
+        highlight = {
+            enable = true,
+        }
+    })
+end
+
+QConfig.plugin.indent_blankline = {}
+QConfig.plugin.indent_blankline.config = function()
+    require('indent_blankline').setup {
+        filetype_exclude = {
+           "help",
+           "terminal",
+           "dashboard",
+           "packer",
+           "lspinfo",
+           "TelescopePrompt",
+           "TelescopeResults",
+        },
+        buftype_exclude = { "terminal" },
+        show_trailing_blankline_indent = false,
+        show_first_indent_level = false,
+    }
+end
+
+QConfig.plugin.nvim_autopairs = {}
+QConfig.plugin.nvim_autopairs.config = function()
+    require('nvim-autopairs').setup{}
+end
+
+QConfig.plugin.dashboard_nvim = {}
+QConfig.plugin.dashboard_nvim.config = function()
+    vim.g.dashboard_default_executive = 'telescope'
+    vim.g.dashboard_custom_header = {
+        "",
+        "",
+        "",
+        "       .--.           .---.        .-.",
+        "   .---|--|   .-.     | A |  .---. |~|    .--.",
+        ".--|===|Ch|---|_|--.__| S |--|:::| |~|-==-|==|---.",
+        "|%%|NT2|oc|===| |~~|%%| C |--|   |_|~|CATS|  |___|-.",
+        "|  |   |ah|===| |==|  | I |  |:::|=| |    |GB|---|=|",
+        "|  |   |ol|   |_|__|  | I |__|   | | |    |  |___| |",
+        "|~~|===|--|===|~|~~|%%|~~~|--|:::|=|~|----|==|---|=|",
+        "^--^---'--^---^-^--^--^---'--^---^-^-^-==-^--^---^-'",
+        "",
+    }
+    vim.g.dashboard_custom_section = {
+        a = {
+            description = { "  New File           " },
+            command = "DashboardNewFile",
+        },
+        e = {
+            description = { "  Configuration      " },
+            command = ":e " .. vim.fn.stdpath('config') .. "/init.lua"
+        },
+    }
+    vim.g.dashboard_custom_footer = {
+        "",
+    }
+end
+
+QConfig.plugins = function(use)
+    use 'wbthomason/packer.nvim'
+    use {
+        'marko-cerovac/material.nvim',
+        config = QConfig.plugin.material.config
+    }
+    use {
+        'glepnir/dashboard-nvim',
+        config = QConfig.plugin.dashboard_nvim.config
+    }
+    use {
+        'lukas-reineke/indent-blankline.nvim',
+        config = QConfig.plugin.indent_blankline.config
+    }
+    use {
+        'nvim-treesitter/nvim-treesitter',
+        run = ':TSUpdate',
+        config = QConfig.plugin.nvim_treesitter.config
+    }
+    use {
+        'neovim/nvim-lspconfig',
+        config = QConfig.plugin.nvim_lspconfig.config
+    }
+    use {
+        'williamboman/nvim-lsp-installer',
+        config = QConfig.plugin.nvim_lsp_installer.config
+    }
+    use {
+        'windwp/nvim-autopairs',
+        config = QConfig.plugin.nvim_autopairs.config
+    }
+    use { 'onsails/lspkind-nvim' }
+    use { 'hrsh7th/nvim-cmp' }
+    use { 'hrsh7th/cmp-nvim-lsp' }
+    use { 'saadparwaiz1/cmp_luasnip' }
+    use { 'L3MON4D3/LuaSnip' }
+    use { 'hrsh7th/cmp-buffer' }
+end
+
+-- Setup plugins
+require('packer').startup({
+    QConfig.plugins,
+    config = {
+        display = {
+            open_fn = function()
+                return require('packer.util').float({ border = 'single' })
+            end
+        },
+        max_jobs = 3,
+    }
+})
+
+local function setup_auto_completion()
+    -- Set completeopt to have a better completion experience
+    vim.o.completeopt = 'menuone,noselect'
+
+    -- luasnip setup
+    local luasnip = require 'luasnip'
+    local lspkind = require('lspkind')
+
+    -- nvim-cmp setup
+    local cmp = require 'cmp'
+    cmp.setup {
+        snippet = {
+            expand = function(args)
+                require('luasnip').lsp_expand(args.body)
+            end,
+        },
+        mapping = {
+            ['<C-p>'] = cmp.mapping.select_prev_item(),
+            ['<C-n>'] = cmp.mapping.select_next_item(),
+            ['<C-d>'] = cmp.mapping.scroll_docs(-4),
+            ['<C-f>'] = cmp.mapping.scroll_docs(4),
+            ['<C-Space>'] = cmp.mapping.complete(),
+            ['<C-e>'] = cmp.mapping.close(),
+            ['<CR>'] = cmp.mapping.confirm {
+                behavior = cmp.ConfirmBehavior.Replace,
+                select = true,
+            },
+            ['<Tab>'] = function(fallback)
+                if cmp.visible() then
+                    cmp.select_next_item()
+                elseif luasnip.expand_or_jumpable() then
+                    luasnip.expand_or_jump()
+                else
+                    fallback()
+                end
+            end,
+            ['<S-Tab>'] = function(fallback)
+                if cmp.visible() then
+                    cmp.select_prev_item()
+                elseif luasnip.jumpable(-1) then
+                    luasnip.jump(-1)
+                else
+                    fallback()
+                end
+            end,
+        },
+        sources = cmp.config.sources({
+            { name = 'nvim_lsp' },
+            { name = 'luasnip' },
+        }, {
+            { name = 'buffer' },
+        }),
+        formatting = {
+            format = lspkind.cmp_format({
+                with_text = false, -- do not show text alongside icons
+                maxwidth = 50, -- prevent the popup from showing more than provided characters (e.g 50 will not show more than 50 characters)
+            })
+        }
+    }
+
+    -- If you want insert `(` after select function or method item
+    local cmp_autopairs = require('nvim-autopairs.completion.cmp')
+    cmp.event:on( 'confirm_done', cmp_autopairs.on_confirm_done({  map_char = { tex = '' } }))
+end
+setup_auto_completion()
+
+-- Basic setup
 local function setup_basic_nvim_options()
     -- use <space> as leader key
     vim.g.mapleader = " "
@@ -36,469 +287,11 @@ local function setup_basic_nvim_options()
     vim.o.statusline = '%f  %y%m%r%h%w%=[%l,%v]      [%L,%p%%] %n'
     vim.o.scrolloff = 3
 
-
     vim.cmd[[au FocusGained,BufEnter * :silent! !]]
 
     -- key map
-    vim.api.nvim_set_keymap('n', "<Home>", [[<cmd>lua QConfig.fn.LineHome()<cr>]], { noremap = true, silent = true })
-    vim.api.nvim_set_keymap('i', "<Home>", [[<cmd>lua QConfig.fn.LineHome()<cr>]], { noremap = true, silent = true })
+    vim.api.nvim_set_keymap('n', "<Home>", [[<cmd>lua QConfig.fn.GoToLineBegin()<cr>]], { noremap = true, silent = true })
+    vim.api.nvim_set_keymap('i', "<Home>", [[<cmd>lua QConfig.fn.GoToLineBegin()<cr>]], { noremap = true, silent = true })
 end
 setup_basic_nvim_options()
 
--- global key mappings
-QConfig.which_key = {
-    normal_mode = {
-        b = {
-            name = "+buffer",
-            l = { "<cmd>lua require('telescope.builtin').buffers()<cr>", "Lists open buffers" },
-            j = { "<cmd>lua require('telescope.builtin').jumplist()<cr>", "Jump list" },
-        },
-        e = {
-            name = "+editor",
-            t = { "<cmd>retab<cr>", "Convert TAB to SPC" },
-        },
-        f = {
-            name = "+file",
-            o = { "<cmd>lua require('telescope.builtin').file_browser()<cr>", "Open file" },
-            t = { "<cmd>NvimTreeToggle<cr>", "Toggle Tree View" },
-            r = { "<cmd>NvimTreeRefresh<cr>", "Refresh Tree View" },
-            p = { "<cmd>Telescope projects<cr>", "Open project" },
-        },
-        m = {
-            name = "+misc",
-            d = { "<cmd>Dashboard<cr>", "Open Dashboard" },
-            m = { "<cmd>lua require('telescope.builtin').marks()<cr>", "Book marks" },
-            p = { "<cmd>lua require('telescope.builtin').builtin()<cr>", "Telescope pickers" },
-        },
-        p = {
-            name = "+packer",
-            c = { "<cmd>PackerCompile<cr>", "Compile" },
-            C = { "<cmd>PackerClean<cr>", "Clean" },
-            i = { "<cmd>PackerInstall<cr>", "Install" },
-            s = { "<cmd>PackerStatus<cr>", "Status" },
-            S = { "<cmd>PackerSync<cr>", "Sync" },
-            u = { "<cmd>PackerUpdate<cr>", "Update" },
-        },
-        s = {
-            name = "+search",
-            f = { "<cmd>lua require('telescope.builtin').find_files()<cr>", "Find files (respects .gitignore)"},
-            w = { "<cmd>lua require('telescope.builtin').grep_string()<cr>", "Find cursor word" },
-            s = { "<cmd>lua require('telescope.builtin').live_grep()<cr>", "Find string" },
-        },
-        t = {
-            name = "+terminal",
-            t = { "<cmd>ToggleTerm<cr>", "Toggle terminal" },
-        }
-    },
-    lsp_mode = {
-        l = {
-            name = "+lsp",
-            a = { "<cmd>lua require('telescope.builtin').lsp_code_actions()<cr>", "List Code Actions" },
-            d = { "<cmd>lua require('telescope.builtin').lsp_definitions()<cr>", "Definition" },
-            o = { "<cmd>SymbolsOutline<cr>", "Outline" },
-            r = { "<cmd>lua require('telescope.builtin').lsp_references()<cr>", "References" },
-            R = { "<cmd>lua vim.lsp.buf.rename()<cr>", "Rename" },
-            s = { "<cmd>lua vim.lsp.buf.signature_help()<cr>", "Signature help" },
-            S = { "<cmd>lua require('telescope.builtin').lsp_document_symbols()<cr>", "List symbols" },
-        }
-    },
-}
-
---- Goto the beginning of first non-whitespace character in line
-QConfig.fn.LineHome = function ()
-    local x = vim.fn.col('.')
-    vim.cmd[[execute "normal ^"]]
-    if x == vim.fn.col('.') then
-        vim.cmd[[execute "normal 0"]]
-    end
-end
-
--- ensure pakcer is installed
-local function ensure_packer_installed()
-    -- if packer is also not installed as opt, install it
-    local install_path = vim.fn.stdpath('data')..'/site/pack/packer/start/packer.nvim'
-    if vim.fn.empty(vim.fn.glob(install_path)) == 0 then
-        return
-    end
-    -- load packer.nvim
-    vim.fn.system({'git', 'clone', '--depth', '1', 'https://github.com/wbthomason/packer.nvim', install_path})
-    vim.cmd 'packadd packer.nvim'
-end
-ensure_packer_installed()
-
--- configuration
-require('packer').startup({function(use)
-    -- Packer can manage itself
-    use { 'wbthomason/packer.nvim' }
-    -- Core
-    use {
-        "nvim-lua/plenary.nvim",
-        module = "plenary",
-    }
-    use {
-        'folke/which-key.nvim',
-        event = "BufWinEnter",
-        config = function()
-            require('which-key').setup({
-                ignore_missing = true,
-            })
-            require("which-key").register(
-                QConfig.which_key.normal_mode,
-                {
-                    mode = "n",
-                    prefix = "<leader>",
-                    silent = false,
-                }
-            )
-        end
-    }
-    use {
-        "qgymib/luabuild.nvim",
-        requires = {
-            {
-                "qgymib/luabuild-addons.nvim",
-                opt = true,
-            }
-        },
-        after = "plenary.nvim",
-        module = "luabuild",
-        opt = true,
-    }
-    -- UI
-    use {
-        'navarasu/onedark.nvim',
-        event = "BufEnter",
-        config = function()
-            vim.cmd[[colorscheme onedark]]
-        end
-    }
-    use {
-        'nvim-treesitter/nvim-treesitter',
-        branch = "0.5-compat",
-        event = "BufRead",
-        config = function()
-            require('nvim-treesitter.configs').setup {
-                ensure_installed = "lua",
-                highlight = {
-                    enable = true,
-                }
-            }
-        end
-    }
-    use {
-        'kyazdani42/nvim-web-devicons',
-        after = 'onedark.nvim',
-        config = function()
-            require('nvim-web-devicons').setup {
-                default = true
-            }
-        end
-    }
-    use {
-        'glepnir/dashboard-nvim',
-        event = "BufWinEnter",
-        config = function()
-            vim.g.dashboard_default_executive = 'telescope'
-            vim.g.dashboard_custom_header = {
-                "",
-                "",
-                "",
-                "       .--.           .---.        .-.",
-                "   .---|--|   .-.     | A |  .---. |~|    .--.",
-                ".--|===|Ch|---|_|--.__| S |--|:::| |~|-==-|==|---.",
-                "|%%|NT2|oc|===| |~~|%%| C |--|   |_|~|CATS|  |___|-.",
-                "|  |   |ah|===| |==|  | I |  |:::|=| |    |GB|---|=|",
-                "|  |   |ol|   |_|__|  | I |__|   | | |    |  |___| |",
-                "|~~|===|--|===|~|~~|%%|~~~|--|:::|=|~|----|==|---|=|",
-                "^--^---'--^---^-^--^--^---'--^---^-^-^-==-^--^---^-'",
-                "",
-            }
-            vim.g.dashboard_custom_section = {
-                a = {
-                    description = { "  New File           " },
-                    command = "DashboardNewFile",
-                },
-                b = {
-                    description = { "  Find File          " },
-                    command = "Telescope find_files",
-                },
-                c = {
-                    description = { "  Recent Projects    " },
-                    command = "Telescope projects",
-                },
-                d = {
-                    description = { "  Recently Used Files" },
-                    command = "Telescope oldfiles",
-                },
-                e = {
-                    description = { "  Configuration      " },
-                    command = ":e " .. vim.fn.stdpath('config') .. "/init.lua"
-                },
-            }
-            vim.g.dashboard_custom_footer = {
-                "",
-            }
-        end
-    }
-    use {
-        'lukas-reineke/indent-blankline.nvim',
-        event = "BufRead",
-        config = function()
-            require('indent_blankline').setup {
-                filetype_exclude = {
-                   "help",
-                   "terminal",
-                   "dashboard",
-                   "packer",
-                   "lspinfo",
-                   "TelescopePrompt",
-                   "TelescopeResults",
-                },
-                buftype_exclude = { "terminal" },
-                show_trailing_blankline_indent = false,
-                show_first_indent_level = false,
-            }
-        end
-    }
-    use {
-        'akinsho/bufferline.nvim',
-        after = 'nvim-web-devicons',
-        config = function()
-            require("bufferline").setup({
-                options = {
-                    right_mouse_command = "vertical sbuffer %d",
-                },
-            })
-        end
-    }
-    use {
-        'nvim-lualine/lualine.nvim',
-        after = 'nvim-web-devicons',
-        config = function()
-            require('lualine').setup()
-        end
-    }
-    -- telescope
-    use {
-        "nvim-telescope/telescope-fzf-native.nvim",
-        run = function(plugin)
-            vim.cmd[[packadd luabuild-addons.nvim]]
-            require("luabuild-addons").make.telescope_fzf_native(plugin)
-        end,
-        opt = true,
-    }
-    use {
-        'nvim-telescope/telescope.nvim',
-        after = { "plenary.nvim" },
-        module = "telescope",
-        cmd = "Telescope",
-        config = function()
-            require('telescope').setup()
-
-            -- telescope-fzf-native.nvim
-            vim.cmd[[packadd telescope-fzf-native.nvim]]
-            require('telescope').load_extension('fzf')
-            -- project.nvim
-            require('telescope').load_extension('projects')
-        end
-    }
-    -- lsp
-    use {
-        'neovim/nvim-lspconfig',
-        event = "BufRead",
-        config = function()
-            require('lspconfig')
-        end
-    }
-    use {
-        'williamboman/nvim-lsp-installer',
-        after = "nvim-lspconfig",
-        cmd = {
-            'LspInstallInfo',
-            'LspInstall',
-            'LspUninstall',
-            'LspUninstallAll',
-            'LspInstallLog',
-            'LspPrintInstalled'
-        },
-        config = function()
-            local lsp_installer = require("nvim-lsp-installer")
-            lsp_installer.on_server_ready(function(server)
-                local on_attach_callback = function(client, bufnr)
-                    -- Enable completion triggered by <c-x><c-o>
-                    vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
-                    -- Register shortcut
-                    require("which-key").register(
-                        QConfig.which_key.lsp_mode,
-                        {
-                            prefix = "<leader>",
-                            buffer = bufnr,
-                        }
-                    )
-                end
-
-                -- This setup() function is exactly the same as lspconfig's setup function (:help lspconfig-quickstart)
-                server:setup({
-                    on_attach = on_attach_callback,
-                    capabilities = require("cmp_nvim_lsp").update_capabilities(
-                        vim.lsp.protocol.make_client_capabilities()
-                    )
-                })
-                vim.cmd [[do User LspAttachBuffers]]
-            end)
-        end
-    }
-    use {
-        "simrat39/symbols-outline.nvim",
-        cmd = {
-            "SymbolsOutline",
-            "SymbolsOutlineOpen",
-            "SymbolsOutlineClose",
-        },
-    }
-    -- Auto completion
-    use {
-        'hrsh7th/nvim-cmp',
-        requires = {
-            {
-                "onsails/lspkind-nvim",
-                module = "lspkind",
-                event = "InsertEnter",
-            },
-            {
-                'rafamadriz/friendly-snippets',
-                after = "lspkind-nvim",
-            },
-            {
-                'L3MON4D3/LuaSnip',
-                wants = 'friendly-snippets',
-                after = 'nvim-cmp',
-                config = function()
-                    require('luasnip').config.set_config {
-                        history = true,
-                        updateevents = "TextChanged,TextChangedI",
-                    }
-                end
-            },
-            {
-                'saadparwaiz1/cmp_luasnip',
-                after = 'LuaSnip',
-            },
-            {
-                'hrsh7th/cmp-nvim-lua',
-                after = 'cmp_luasnip',
-            },
-            {
-                'hrsh7th/cmp-nvim-lsp',
-                module = "cmp_nvim_lsp",
-                after = "nvim-lspconfig",
-            },
-            {
-                'hrsh7th/cmp-buffer',
-                after = 'cmp-nvim-lsp',
-            },
-            {
-                'hrsh7th/cmp-path',
-                after = 'cmp-buffer',
-            },
-            {
-                'windwp/nvim-autopairs',
-                after = 'nvim-cmp',
-                config = function()
-                    require('nvim-autopairs').setup {}
-                    require("nvim-autopairs.completion.cmp").setup {
-                        map_cr = true, --  map <CR> on insert mode
-                        map_complete = true, -- it will auto insert `(` (map_char) after select function or method item
-                        auto_select = true, -- automatically select the first item
-                        insert = false, -- use insert confirm behavior instead of replace
-                        map_char = { -- modifies the function or method delimiter by filetypes
-                            all = '(',
-                            tex = '{'
-                        }
-                    }
-                end
-            },
-        },
-        module = "cmp",
-        after = 'lspkind-nvim',
-        config = function()
-            local cmp = require('cmp')
-            cmp.setup {
-                completion = {
-                    keyword_length = 2,
-                },
-                formatting = {
-                    format = require("lspkind").cmp_format({
-                        with_text = true,
-                        menu = ({
-                            nvim_lsp = "[LSP]",
-                            luasnip = "[SNIP]",
-                            buffer = "[BUF]",
-                            nvim_lua = "[LUA]",
-                            path = "[PATH]"
-                        })
-                    })
-                },
-                mapping = {
-                    ['<C-d>'] = cmp.mapping.scroll_docs(-4),
-                    ['<C-f>'] = cmp.mapping.scroll_docs(4),
-                    ['<C-Space>'] = cmp.mapping.complete(),
-                    ['<C-e>'] = cmp.mapping.close(),
-                    ['<CR>'] = cmp.mapping.confirm({ select = true }),
-                },
-                snippet = {
-                    expand = function(args)
-                        require("luasnip").lsp_expand(args.body)
-                    end,
-                },
-                sources = {
-                    { name = 'nvim_lsp' },
-                    { name = 'luasnip' },
-                    { name = 'buffer' },
-                    { name = 'nvim_lua' },
-                    { name = 'path' },
-                }
-            }
-        end
-    }
-    -- Misc
-    use {
-        'kyazdani42/nvim-tree.lua',
-        requires = 'kyazdani42/nvim-web-devicons',
-        cmd = { "NvimTreeToggle", "NvimTreeFocus" },
-        config = function()
-            vim.g.nvim_tree_respect_buf_cwd = 1
-            require('nvim-tree').setup {
-                ignore_ft_on_setup = { "dashboard" },
-                update_cwd = true,
-                update_focused_file = {
-                    enable = true,
-                    update_cwd = true
-                },
-            }
-        end
-    }
-    use {
-        "ahmedkhalf/project.nvim",
-        config = function()
-            require("project_nvim").setup()
-        end,
-        event = "VimEnter",
-    }
-    use {
-        "akinsho/toggleterm.nvim",
-        cmd = { "ToggleTerm", "ToggleTermOpenAll", "ToggleTermCloseAll", "TermExec" },
-        config = function()
-            require("toggleterm").setup()
-        end
-    }
-end,
-config = {
-    display = {
-        open_fn = function()
-            return require('packer.util').float({ border = 'single' })
-        end
-    },
-    max_jobs = 4,
-}
-})
