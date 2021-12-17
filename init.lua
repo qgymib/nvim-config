@@ -3,12 +3,25 @@ QConfig = {}
 QConfig.fn = {}
 QConfig.plugin = {}
 
---- Goto the beginning of first non-whitespace character in line
-QConfig.fn.GoToLineBegin = function ()
+--! @brief Goto the beginning of first non-whitespace character in line
+QConfig.fn.GoToLineBegin = function()
     local x = vim.fn.col('.')
     vim.cmd[[execute "normal ^"]]
     if x == vim.fn.col('.') then
         vim.cmd[[execute "normal 0"]]
+    end
+end
+
+--! @brief Check if a file is exist
+--! @param[in] name The path of file
+--! @return         bool
+QConfig.fn.FileExists = function(name)
+    local f = io.open(name, "r")
+    if f ~= nil then
+        io.close(f)
+        return true
+    else
+        return false
     end
 end
 
