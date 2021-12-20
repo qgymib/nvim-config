@@ -140,10 +140,19 @@ QConfig.plugin.telescop.config = function()
     require('telescope').setup()
 end
 
+QConfig.plugin.lualine = {}
+QConfig.plugin.lualine.config = function()
+    require'lualine'.setup()
+end
+
 QConfig.plugins = function(use)
     use { 'wbthomason/packer.nvim' }
     use { 'nvim-lua/plenary.nvim' }
     use { 'kyazdani42/nvim-web-devicons' }
+    use {
+        'nvim-lualine/lualine.nvim',
+        config = QConfig.plugin.lualine.config
+    }
     use {
         'marko-cerovac/material.nvim',
         config = QConfig.plugin.material.config
