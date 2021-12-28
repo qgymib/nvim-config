@@ -32,7 +32,8 @@ QConfig.plugin.nvim_lsp_installer.sumneko_lua = function()
     opts.settings = {
         Lua = {
             runtime = {
-                -- Tell the language server which version of Lua you're using (most likely LuaJIT in the case of Neovim)
+                -- Tell the language server which version of Lua you're using
+                -- (most likely LuaJIT in the case of Neovim)
                 version = 'LuaJIT',
                 -- Setup your lua path
                 path = runtime_path,
@@ -145,12 +146,37 @@ QConfig.plugin.lualine.config = function()
     require'lualine'.setup()
 end
 
+QConfig.plugin.cheatsheet = {}
+QConfig.plugin.cheatsheet.config = function()
+    require("cheatsheet").setup()
+end
+
+QConfig.plugin.which_key = {}
+QConfig.plugin.which_key.normal_mode = {
+    ["<F12>"] = { "<cmd>lua require('telescope.builtin').lsp_definitions()<cr>", "Jump to definitions" },
+}
+QConfig.plugin.which_key.config = function()
+    local which_key = require('which-key')
+    which_key.setup({
+        ignore_missing = true,
+    })
+    which_key.register(
+        QConfig.plugin.which_key.normal_mode,
+        {
+            mode = "n",
+            silent = false,
+        }
+    )
+end
+
 QConfig.plugins = function(use)
     use { 'wbthomason/packer.nvim' }
     use { 'nvim-lua/plenary.nvim' }
-    use { 'kyazdani42/nvim-web-devicons' }
     use {
         'nvim-lualine/lualine.nvim',
+        requires = {
+            { 'kyazdani42/nvim-web-devicons' },
+        },
         config = QConfig.plugin.lualine.config
     }
     use {
@@ -160,6 +186,19 @@ QConfig.plugins = function(use)
     use {
         'glepnir/dashboard-nvim',
         config = QConfig.plugin.dashboard_nvim.config
+    }
+    use {
+        'sudormrfbin/cheatsheet.nvim',
+        requires = {
+            { 'nvim-telescope/telescope.nvim' },
+            { 'nvim-lua/popup.nvim' },
+            { 'nvim-lua/plenary.nvim' },
+        },
+        config = QConfig.plugin.cheatsheet.config
+    }
+    use {
+        'folke/which-key.nvim',
+        config = QConfig.plugin.which_key.config
     }
     use {
         'lukas-reineke/indent-blankline.nvim',
@@ -216,8 +255,8 @@ local function setup_auto_completion()
     local lspkind = require('lspkind')
 
     -- nvim-cmp setup
-    local cmp = require 'cmp'
-    cmp.setup {
+    local cmp = require('cmp')
+    cmp.setup({
         snippet = {
             expand = function(args)
                 require('luasnip').lsp_expand(args.body)
@@ -261,11 +300,14 @@ local function setup_auto_completion()
         }),
         formatting = {
             format = lspkind.cmp_format({
-                with_text = true, -- do not show text alongside icons
-                maxwidth = 50, -- prevent the popup from showing more than provided characters (e.g 50 will not show more than 50 characters)
+                -- do not show text alongside icons
+                with_text = true,
+                -- prevent the popup from showing more than provided characters
+                -- (e.g 50 will not show more than 50 characters)
+                maxwidth = 50,
             })
         }
-    }
+    })
 
     -- If you want insert `(` after select function or method item
     local cmp_autopairs = require('nvim-autopairs.completion.cmp')
@@ -310,7 +352,6 @@ local function setup_basic_nvim_options()
     vim.cmd[[au FocusGained,BufEnter * :silent! !]]
 
     -- key map
-    vim.api.nvim_set_keymap('n', "<F12>", [[<cmd>lua require('telescope.builtin').lsp_definitions()<cr>]], { noremap = true, silent = true })
     vim.api.nvim_set_keymap('n', "<Home>", [[<cmd>lua QConfig.fn.GoToLineBegin()<cr>]], { noremap = true, silent = true })
     vim.api.nvim_set_keymap('i', "<Home>", [[<cmd>lua QConfig.fn.GoToLineBegin()<cr>]], { noremap = true, silent = true })
 end
