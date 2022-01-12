@@ -1,9 +1,37 @@
--- Config pre-setup
 QConfig = {}
 QConfig.fn = {}
 QConfig.plugin = {}
 
---- Goto the beginning of first non-whitespace character in line
+vim.cmd(
+[[
+call plug#begin()
+
+Plug 'nvim-lua/plenary.nvim'
+Plug 'marko-cerovac/material.nvim'
+Plug 'kyazdani42/nvim-web-devicons'
+Plug 'nvim-lualine/lualine.nvim'
+Plug 'folke/which-key.nvim'
+Plug 'lukas-reineke/indent-blankline.nvim'
+Plug 'nvim-treesitter/nvim-treesitter', { 'do': ':TSUpdate' }
+Plug 'glepnir/dashboard-nvim'
+Plug 'windwp/nvim-autopairs'
+Plug 'nvim-telescope/telescope.nvim'
+Plug 'folke/which-key.nvim'
+
+" LSP
+Plug 'neovim/nvim-lspconfig'
+Plug 'williamboman/nvim-lsp-installer'
+Plug 'hrsh7th/nvim-cmp'
+Plug 'onsails/lspkind-nvim'
+Plug 'hrsh7th/cmp-nvim-lsp'
+Plug 'saadparwaiz1/cmp_luasnip'
+Plug 'L3MON4D3/LuaSnip'
+Plug 'hrsh7th/cmp-buffer'
+
+call plug#end()
+]])
+
+--- @brief Go to the beginning of line
 QConfig.fn.GoToLineBegin = function ()
     local x = vim.fn.col('.')
     vim.cmd[[execute "normal ^"]]
@@ -12,14 +40,119 @@ QConfig.fn.GoToLineBegin = function ()
     end
 end
 
+-- material.nvim
 QConfig.plugin.material = {}
 QConfig.plugin.material.config = function()
     vim.cmd[[colorscheme material]]
 end
+QConfig.plugin.material.config()
 
-QConfig.plugin.nvim_lspconfig = {}
-QConfig.plugin.nvim_lspconfig.config = function()
+-- indent-blankline.nvim
+QConfig.plugin.indent_blankline = {}
+QConfig.plugin.indent_blankline.config = function()
+    require('indent_blankline').setup {
+        filetype_exclude = {
+           "help",
+           "terminal",
+           "dashboard",
+           "packer",
+           "lsp-installer",
+           "lspinfo",
+           "TelescopePrompt",
+           "TelescopeResults",
+        },
+        buftype_exclude = { "terminal" },
+        show_trailing_blankline_indent = false,
+        show_first_indent_level = false,
+    }
 end
+QConfig.plugin.indent_blankline.config()
+
+-- dashboard-nvim
+QConfig.plugin.dashboard_nvim = {}
+QConfig.plugin.dashboard_nvim.config = function()
+    vim.g.dashboard_default_executive = 'telescope'
+    vim.g.dashboard_custom_header = {
+        "",
+        "",
+        "",
+        "       .--.           .---.        .-.",
+        "   .---|--|   .-.     | A |  .---. |~|    .--.",
+        ".--|===|Ch|---|_|--.__| S |--|:::| |~|-==-|==|---.",
+        "|%%|NT2|oc|===| |~~|%%| C |--|   |_|~|CATS|  |___|-.",
+        "|  |   |ah|===| |==|  | I |  |:::|=| |    |GB|---|=|",
+        "|  |   |ol|   |_|__|  | I |__|   | | |    |  |___| |",
+        "|~~|===|--|===|~|~~|%%|~~~|--|:::|=|~|----|==|---|=|",
+        "^--^---'--^---^-^--^--^---'--^---^-^-^-==-^--^---^-'",
+        "",
+    }
+    vim.g.dashboard_custom_section = {
+        a = {
+            description = { "  New File           " },
+            command = "DashboardNewFile",
+        },
+        e = {
+            description = { "  Configuration      " },
+            command = ":e " .. vim.fn.stdpath('config') .. "/init.lua"
+        },
+    }
+    vim.g.dashboard_custom_footer = {
+        "",
+    }
+end
+QConfig.plugin.dashboard_nvim.config()
+
+-- nvim-autopairs
+QConfig.plugin.nvim_autopairs = {}
+QConfig.plugin.nvim_autopairs.config = function()
+    require('nvim-autopairs').setup{}
+end
+QConfig.plugin.nvim_autopairs.config()
+
+-- nvim-treesitter
+QConfig.plugin.nvim_treesitter = {}
+QConfig.plugin.nvim_treesitter.config = function()
+    require('nvim-treesitter.configs').setup({
+        ensure_installed = "lua",
+        highlight = {
+            enable = true,
+        }
+    })
+end
+QConfig.plugin.nvim_treesitter.config()
+
+-- lualine.nvim
+QConfig.plugin.lualine = {}
+QConfig.plugin.lualine.config = function()
+    require('lualine').setup()
+end
+QConfig.plugin.lualine.config()
+
+-- telescope.nvim
+QConfig.plugin.telescop = {}
+QConfig.plugin.telescop.config = function()
+    require('telescope').setup()
+end
+
+-- which-key.nvim
+QConfig.plugin.which_key = {}
+QConfig.plugin.which_key.normal_mode = {
+    ["<F12>"] = { "<cmd>lua require('telescope.builtin').lsp_definitions()<cr>", "Jump to definitions" },
+}
+QConfig.plugin.which_key.config = function()
+    local which_key = require('which-key')
+    which_key.setup({
+        ignore_missing = true,
+    })
+    which_key.register(
+        QConfig.plugin.which_key.normal_mode,
+        {
+            mode = "n",
+            silent = false,
+        }
+    )
+end
+QConfig.plugin.which_key.config()
 
 QConfig.plugin.nvim_lsp_installer = {}
 QConfig.plugin.nvim_lsp_installer.sumneko_lua = function()
@@ -55,6 +188,13 @@ QConfig.plugin.nvim_lsp_installer.sumneko_lua = function()
 
     return opts
 end
+QConfig.plugin.nvim_lsp_installer.update_options = function(server, opts)
+    if server.name == "sumneko_lua" then
+        opts = vim.tbl_deep_extend("force", opts,
+            QConfig.plugin.nvim_lsp_installer.sumneko_lua())
+    end
+    return opts
+end
 QConfig.plugin.nvim_lsp_installer.config = function()
     local lsp_installer = require("nvim-lsp-installer")
 
@@ -64,194 +204,19 @@ QConfig.plugin.nvim_lsp_installer.config = function()
         opts.capabilities = require('cmp_nvim_lsp').update_capabilities(
             vim.lsp.protocol.make_client_capabilities())
         -- sumneko_lua configuration
-        if server.name == "sumneko_lua" then
-            opts = vim.tbl_deep_extend("force", opts, QConfig.plugin.nvim_lsp_installer.sumneko_lua())
-        end
+        opts = QConfig.plugin.nvim_lsp_installer.update_options(server, opts)
         server:setup(opts)
     end)
 end
+QConfig.plugin.nvim_lsp_installer.config()
 
-QConfig.plugin.nvim_treesitter = {}
-QConfig.plugin.nvim_treesitter.config = function()
-    require('nvim-treesitter.configs').setup({
-        ensure_installed = "lua",
-        highlight = {
-            enable = true,
-        }
-    })
-end
-
-QConfig.plugin.indent_blankline = {}
-QConfig.plugin.indent_blankline.config = function()
-    require('indent_blankline').setup {
-        filetype_exclude = {
-           "help",
-           "terminal",
-           "dashboard",
-           "packer",
-           "lspinfo",
-           "TelescopePrompt",
-           "TelescopeResults",
-        },
-        buftype_exclude = { "terminal" },
-        show_trailing_blankline_indent = false,
-        show_first_indent_level = false,
-    }
-end
-
-QConfig.plugin.nvim_autopairs = {}
-QConfig.plugin.nvim_autopairs.config = function()
-    require('nvim-autopairs').setup{}
-end
-
-QConfig.plugin.dashboard_nvim = {}
-QConfig.plugin.dashboard_nvim.config = function()
-    vim.g.dashboard_default_executive = 'telescope'
-    vim.g.dashboard_custom_header = {
-        "",
-        "",
-        "",
-        "       .--.           .---.        .-.",
-        "   .---|--|   .-.     | A |  .---. |~|    .--.",
-        ".--|===|Ch|---|_|--.__| S |--|:::| |~|-==-|==|---.",
-        "|%%|NT2|oc|===| |~~|%%| C |--|   |_|~|CATS|  |___|-.",
-        "|  |   |ah|===| |==|  | I |  |:::|=| |    |GB|---|=|",
-        "|  |   |ol|   |_|__|  | I |__|   | | |    |  |___| |",
-        "|~~|===|--|===|~|~~|%%|~~~|--|:::|=|~|----|==|---|=|",
-        "^--^---'--^---^-^--^--^---'--^---^-^-^-==-^--^---^-'",
-        "",
-    }
-    vim.g.dashboard_custom_section = {
-        a = {
-            description = { "  New File           " },
-            command = "DashboardNewFile",
-        },
-        e = {
-            description = { "  Configuration      " },
-            command = ":e " .. vim.fn.stdpath('config') .. "/init.lua"
-        },
-    }
-    vim.g.dashboard_custom_footer = {
-        "",
-    }
-end
-
-QConfig.plugin.telescop = {}
-QConfig.plugin.telescop.config = function()
-    require('telescope').setup()
-end
-
-QConfig.plugin.lualine = {}
-QConfig.plugin.lualine.config = function()
-    require'lualine'.setup()
-end
-
-QConfig.plugin.cheatsheet = {}
-QConfig.plugin.cheatsheet.config = function()
-    require("cheatsheet").setup()
-end
-
-QConfig.plugin.which_key = {}
-QConfig.plugin.which_key.normal_mode = {
-    ["<F12>"] = { "<cmd>lua require('telescope.builtin').lsp_definitions()<cr>", "Jump to definitions" },
-}
-QConfig.plugin.which_key.config = function()
-    local which_key = require('which-key')
-    which_key.setup({
-        ignore_missing = true,
-    })
-    which_key.register(
-        QConfig.plugin.which_key.normal_mode,
-        {
-            mode = "n",
-            silent = false,
-        }
-    )
-end
-
-QConfig.plugins = function(use)
-    use { 'wbthomason/packer.nvim' }
-    use { 'nvim-lua/plenary.nvim' }
-    use {
-        'nvim-lualine/lualine.nvim',
-        requires = {
-            { 'kyazdani42/nvim-web-devicons' },
-        },
-        config = QConfig.plugin.lualine.config
-    }
-    use {
-        'marko-cerovac/material.nvim',
-        config = QConfig.plugin.material.config
-    }
-    use {
-        'glepnir/dashboard-nvim',
-        config = QConfig.plugin.dashboard_nvim.config
-    }
-    use {
-        'sudormrfbin/cheatsheet.nvim',
-        requires = {
-            { 'nvim-telescope/telescope.nvim' },
-            { 'nvim-lua/popup.nvim' },
-            { 'nvim-lua/plenary.nvim' },
-        },
-        config = QConfig.plugin.cheatsheet.config
-    }
-    use {
-        'folke/which-key.nvim',
-        config = QConfig.plugin.which_key.config
-    }
-    use {
-        'lukas-reineke/indent-blankline.nvim',
-        config = QConfig.plugin.indent_blankline.config
-    }
-    use {
-        'nvim-treesitter/nvim-treesitter',
-        run = ':TSUpdate',
-        config = QConfig.plugin.nvim_treesitter.config
-    }
-    use {
-        'neovim/nvim-lspconfig',
-        config = QConfig.plugin.nvim_lspconfig.config
-    }
-    use {
-        'williamboman/nvim-lsp-installer',
-        config = QConfig.plugin.nvim_lsp_installer.config
-    }
-    use {
-        'windwp/nvim-autopairs',
-        config = QConfig.plugin.nvim_autopairs.config
-    }
-    use {
-        'nvim-telescope/telescope.nvim',
-        config = QConfig.plugin.telescop.config
-    }
-    use { 'onsails/lspkind-nvim' }
-    use { 'hrsh7th/nvim-cmp' }
-    use { 'hrsh7th/cmp-nvim-lsp' }
-    use { 'saadparwaiz1/cmp_luasnip' }
-    use { 'L3MON4D3/LuaSnip' }
-    use { 'hrsh7th/cmp-buffer' }
-end
-
--- Setup plugins
-require('packer').startup({
-    QConfig.plugins,
-    config = {
-        display = {
-            open_fn = function()
-                return require('packer.util').float({ border = 'single' })
-            end
-        },
-        max_jobs = 3,
-    }
-})
-
-local function setup_auto_completion()
+QConfig.plugin.nvim_cmp = {}
+QConfig.plugin.nvim_cmp.config = function()
     -- Set completeopt to have a better completion experience
     vim.o.completeopt = 'menuone,noselect'
 
     -- luasnip setup
-    local luasnip = require 'luasnip'
+    local luasnip = require('luasnip')
     local lspkind = require('lspkind')
 
     -- nvim-cmp setup
@@ -313,7 +278,27 @@ local function setup_auto_completion()
     local cmp_autopairs = require('nvim-autopairs.completion.cmp')
     cmp.event:on( 'confirm_done', cmp_autopairs.on_confirm_done({  map_char = { tex = '' } }))
 end
-setup_auto_completion()
+QConfig.plugin.nvim_cmp.config()
+
+QConfig.plugin.nvim_lspconfig = {}
+QConfig.plugin.nvim_lspconfig.config = function()
+    -- TextEdit might fail if hidden is not set.
+    vim.o.hidden = true
+    -- Some servers have issues with backup files, see #649.
+    vim.cmd[[set nobackup]]
+    vim.cmd[[set nowritebackup]]
+    -- Give more space for displaying messages.
+    vim.o.cmdheight = 2
+    -- Having longer updatetime (default is 4000 ms = 4 s) leads to noticeable
+    -- delays and poor user experience.
+    vim.o.updatetime = 300
+    -- Don't pass messages to |ins-completion-menu|.
+    vim.cmd[[set shortmess+=c]]
+    -- Always show the signcolumn, otherwise it would shift the text each time
+    -- diagnostics appear/become resolved.
+    vim.cmd[[set signcolumn=number]]
+end
+QConfig.plugin.nvim_lspconfig.config()
 
 -- Basic setup
 local function setup_basic_nvim_options()
@@ -323,11 +308,9 @@ local function setup_basic_nvim_options()
     vim.opt.termguicolors = true
     vim.opt.title = true
     vim.opt.clipboard = "unnamedplus"
-    vim.opt.cmdheight = 1
     vim.opt.cul = true
     -- disable tilde on end of buffer: https://github.com/neovim/neovim/pull/8546#issuecomment-643643758
     vim.opt.fillchars = { eob = " " }
-    vim.opt.hidden = true
     vim.opt.ignorecase = true
     vim.opt.mouse = "a"
     -- Numbers
@@ -335,7 +318,6 @@ local function setup_basic_nvim_options()
     vim.opt.ruler = false
     -- Don't show any numbers inside terminals
     vim.cmd[[au TermOpen term://* setlocal nonumber norelativenumber | setfiletype terminal]]
-    vim.opt.signcolumn = "number"
     vim.opt.splitbelow = true
     vim.opt.splitright = true
     vim.cmd[[filetype plugin indent on]]
@@ -346,9 +328,7 @@ local function setup_basic_nvim_options()
     vim.o.tabstop = 4
     vim.o.softtabstop = 4
     vim.o.expandtab = true
-    vim.o.statusline = '%f  %y%m%r%h%w%=[%l,%v]      [%L,%p%%] %n'
     vim.o.scrolloff = 3
-
     vim.cmd[[au FocusGained,BufEnter * :silent! !]]
 
     -- key map
@@ -356,4 +336,3 @@ local function setup_basic_nvim_options()
     vim.api.nvim_set_keymap('i', "<Home>", [[<cmd>lua QConfig.fn.GoToLineBegin()<cr>]], { noremap = true, silent = true })
 end
 setup_basic_nvim_options()
-
