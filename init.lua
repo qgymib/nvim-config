@@ -9,14 +9,18 @@ call plug#begin()
 Plug 'nvim-lua/plenary.nvim'
 Plug 'marko-cerovac/material.nvim'
 Plug 'kyazdani42/nvim-web-devicons'
+Plug 'kyazdani42/nvim-tree.lua'
 Plug 'nvim-lualine/lualine.nvim'
 Plug 'folke/which-key.nvim'
 Plug 'lukas-reineke/indent-blankline.nvim'
 Plug 'nvim-treesitter/nvim-treesitter', { 'do': ':TSUpdate' }
 Plug 'glepnir/dashboard-nvim'
 Plug 'windwp/nvim-autopairs'
-Plug 'nvim-telescope/telescope.nvim'
 Plug 'folke/which-key.nvim'
+
+" Fuzzy finder
+Plug 'nvim-telescope/telescope.nvim'
+Plug 'nvim-telescope/telescope-fzf-native.nvim'
 
 " LSP
 Plug 'neovim/nvim-lspconfig'
@@ -39,6 +43,13 @@ QConfig.fn.GoToLineBegin = function ()
         vim.cmd[[execute "normal 0"]]
     end
 end
+
+-- vim-plug
+QConfig.plugin.vim_plug = {}
+QConfig.plugin.vim_plug.config = function()
+    vim.g.plug_threads = 4
+end
+QConfig.plugin.vim_plug.config()
 
 -- material.nvim
 QConfig.plugin.material = {}
@@ -131,29 +142,22 @@ QConfig.plugin.lualine.config()
 -- telescope.nvim
 QConfig.plugin.telescop = {}
 QConfig.plugin.telescop.config = function()
-    require('telescope').setup()
-end
-
--- which-key.nvim
-QConfig.plugin.which_key = {}
-QConfig.plugin.which_key.normal_mode = {
-    ["<F12>"] = { "<cmd>lua require('telescope.builtin').lsp_definitions()<cr>", "Jump to definitions" },
-}
-QConfig.plugin.which_key.config = function()
-    local which_key = require('which-key')
-    which_key.setup({
-        ignore_missing = true,
-    })
-    which_key.register(
-        QConfig.plugin.which_key.normal_mode,
-        {
-            mode = "n",
-            silent = false,
+    local telescope = require('telescope')
+    telescope.setup({
+        extensions = {
+            fzf = {
+                fuzzy = true,                       -- false will only do exact matching
+                override_generic_sorter = true,     -- override the generic sorter
+                override_file_sorter = true,        -- override the file sorter
+                case_mode = "smart_case",           -- or "ignore_case" or "respect_case"
+                                                    -- the default case_mode is "smart_case"
+            }
         }
-    )
+    })
+    telescope.load_extension('fzf')
 end
-QConfig.plugin.which_key.config()
 
+-- nvim-lsp-installer
 QConfig.plugin.nvim_lsp_installer = {}
 QConfig.plugin.nvim_lsp_installer.sumneko_lua = function()
     local opts = {}
@@ -210,6 +214,7 @@ QConfig.plugin.nvim_lsp_installer.config = function()
 end
 QConfig.plugin.nvim_lsp_installer.config()
 
+-- nvim-cmp
 QConfig.plugin.nvim_cmp = {}
 QConfig.plugin.nvim_cmp.config = function()
     -- Set completeopt to have a better completion experience
@@ -276,10 +281,11 @@ QConfig.plugin.nvim_cmp.config = function()
 
     -- If you want insert `(` after select function or method item
     local cmp_autopairs = require('nvim-autopairs.completion.cmp')
-    cmp.event:on( 'confirm_done', cmp_autopairs.on_confirm_done({  map_char = { tex = '' } }))
+    cmp.event:on( 'confirm_done', cmp_autopairs.on_confirm_done({ map_char = { tex = '' } }))
 end
 QConfig.plugin.nvim_cmp.config()
 
+-- nvim-lspconfig
 QConfig.plugin.nvim_lspconfig = {}
 QConfig.plugin.nvim_lspconfig.config = function()
     -- TextEdit might fail if hidden is not set.
@@ -299,6 +305,81 @@ QConfig.plugin.nvim_lspconfig.config = function()
     vim.cmd[[set signcolumn=number]]
 end
 QConfig.plugin.nvim_lspconfig.config()
+
+-- nvim-tree
+QConfig.plugin.nvim_tree = {}
+QConfig.plugin.nvim_tree.config = function()
+    require('nvim-tree').setup()
+end
+QConfig.plugin.nvim_tree.config()
+
+-- which-key.nvim
+QConfig.plugin.which_key = {}
+QConfig.plugin.which_key.normal_mode = {
+    ["<Home>"] = {
+        "<cmd>lua QConfig.fn.GoToLineBegin()<cr>",
+        "Goto begin of line"
+    },
+    ["<F12>"] = {
+        "<cmd>lua require('telescope.builtin').lsp_definitions()<cr>",
+        "Jump to definitions"
+    },
+    ["<leader>"] = {
+        b = {
+            name = "+buffer",
+            l = {
+                "<cmd>Telescope buffers<cr>",
+                "List buffers"
+            },
+        },
+        f = {
+            name = "+file",
+            b = {
+                "<cmd>NvimTreeToggle<cr>",
+                "browser (Toggle)"
+            },
+        },
+        s = {
+            name = "+search",
+            f = {
+                "<cmd>Telescope find_files<cr>",
+                "File name"
+            },
+            G = {
+                "<cmd>Telescope grep_string<cr>",
+                "<cursor> in workspace"
+            },
+            S = {
+                "<cmd>Telescope live_grep<cr>",
+                "String in workspace"
+            }
+        }
+    },
+}
+QConfig.plugin.which_key.insert_mode = {
+    ["<Home>"] = QConfig.plugin.which_key.normal_mode["<Home>"],
+}
+QConfig.plugin.which_key.config = function()
+    local which_key = require('which-key')
+    which_key.setup({
+        ignore_missing = true,
+    })
+    which_key.register(
+        QConfig.plugin.which_key.normal_mode,
+        {
+            mode = "n",
+            silent = true,
+        }
+    )
+    which_key.register(
+        QConfig.plugin.which_key.insert_mode,
+        {
+            mode = "i",
+            silent = true,
+        }
+    )
+end
+QConfig.plugin.which_key.config()
 
 -- Basic setup
 local function setup_basic_nvim_options()
@@ -330,9 +411,6 @@ local function setup_basic_nvim_options()
     vim.o.expandtab = true
     vim.o.scrolloff = 3
     vim.cmd[[au FocusGained,BufEnter * :silent! !]]
-
-    -- key map
-    vim.api.nvim_set_keymap('n', "<Home>", [[<cmd>lua QConfig.fn.GoToLineBegin()<cr>]], { noremap = true, silent = true })
-    vim.api.nvim_set_keymap('i', "<Home>", [[<cmd>lua QConfig.fn.GoToLineBegin()<cr>]], { noremap = true, silent = true })
 end
 setup_basic_nvim_options()
+
